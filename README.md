@@ -23,28 +23,33 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 
 ## O que já funciona
 
+## O que já funciona
+
 - **Login com Google e Apple** — autenticação via Supabase OAuth, sem senha
 - **Modo visitante** — use sem criar conta, dados ficam salvos no dispositivo
 - **Dashboard** — saldo atual, entradas/saídas do mês, orbe do Termômetro
 - **Termômetro Sereno** — orbe animada que muda cor e expressão conforme os gastos (5 estados)
 - **Formulário de transações** — registre entradas e saídas com valor, categoria, data e descrição
-- **22 categorias com emojis** — 15 de despesa (Alimentação, Transporte, etc) e 7 de receita (Salário, Freelance, etc)
+- **22 categorias com emojis** — 15 de despesa e 7 de receita
 - **Lista de movimentações** — agrupada por data (Hoje, Ontem, etc), swipe pra deletar
 - **Saldo calculado automaticamente** — entradas − saídas do mês
+- **GPS automático** — captura localização ao registrar transação (reverse geocoding via Nominatim)
+- **Mapa com pin** — ajuste visual da localização no mapa (OpenStreetMap + flutter_map)
+- **Edição manual de endereço** — corrija o endereço digitando direto
+- **Contas recorrentes** — aluguel, internet, assinaturas com frequência, vencimento e status (paga/pendente/atrasada)
+- **Diário financeiro** — reflexões com 8 humores (emoji), 8 tags contextuais e texto livre
+- **Orçamento por categoria** — teto mensal por categoria com barra de progresso e cores do termômetro
 - **Tema Light + Dark** — Material 3, segue preferência do sistema
 - **Auth guard** — redirecionamento automático por estado de autenticação
 - **Sessão persistida** — não desloga ao fechar o app
 - **Deploy web** — acessível em qualquer navegador via Vercel
 - **Banco de dados** — Supabase (Postgres) com Row Level Security
-- **GPS automático** — captura localização ao registrar transação (reverse geocoding via Nominatim)
-- **Mapa com pin** — ajuste visual da localização no mapa (OpenStreetMap + flutter_map)
-- **Edição manual de endereço** — corrija o endereço digitando direto
 
 ## Roadmap
 
 | Versão | Status | Features |
 |--------|--------|----------|
-| **V1** | 🚧 Em desenvolvimento | GPS, cartão de crédito, parcelamento, contas futuras, recorrências, diário financeiro, sync offline |
+| **V1** | 🚧 Em desenvolvimento | Cartão de crédito, parcelamento, sync offline |
 | **V2** | 📋 Planejado | Compartilhamento de espaços, mapa de gastos, comprovantes/anexos |
 | **V3** | 📋 Planejado | OCR de notas, busca avançada, IA financeira |
 | **V4** | 📋 Planejado | QR Code, Pix, Open Finance |
@@ -73,45 +78,79 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 
 ## Estrutura do Projeto
 
+## Estrutura do Projeto
+
+```
 lib/
 ├── main.dart
 ├── app/
-│ ├── app.dart
-│ ├── theme/
-│ │ ├── app_colors.dart
-│ │ ├── app_typography.dart
-│ │ └── app_theme.dart
-│ └── router/
-│ └── app_router.dart
+│   ├── app.dart
+│   ├── theme/
+│   │   ├── app_colors.dart
+│   │   ├── app_typography.dart
+│   │   └── app_theme.dart
+│   └── router/
+│       └── app_router.dart
 ├── core/
-│ ├── constants/app_constants.dart
-│ ├── network/supabase_client.dart
-│ └── services/guest_service.dart
+│   ├── constants/app_constants.dart
+│   ├── network/supabase_client.dart
+│   └── services/
+│       ├── guest_service.dart
+│       ├── location_service.dart
+│       └── map_picker_screen.dart
 └── features/
-├── auth/
-│ └── presentation/
-│ ├── providers/auth_provider.dart
-│ ├── screens/welcome_screen.dart
-│ ├── screens/login_screen.dart
-│ └── widgets/oauth_buttons.dart
-├── dashboard/
-│ └── presentation/
-│ ├── screens/dashboard_screen.dart
-│ └── widgets/
-│ ├── termometro_orb.dart
-│ └── guest_banner.dart
-├── transactions/
-│ ├── data/
-│ │ ├── transaction_model.dart
-│ │ ├── local_transaction_service.dart
-│ │ └── default_categories.dart
-│ └── presentation/
-│ ├── providers/transaction_provider.dart
-│ ├── screens/transaction_form_screen.dart
-│ └── widgets/transaction_tile.dart
-└── settings/
-└── presentation/
-└── screens/settings_screen.dart
+    ├── auth/
+    │   └── presentation/
+    │       ├── providers/auth_provider.dart
+    │       ├── screens/welcome_screen.dart
+    │       ├── screens/login_screen.dart
+    │       └── widgets/oauth_buttons.dart
+    ├── dashboard/
+    │   └── presentation/
+    │       ├── screens/dashboard_screen.dart
+    │       └── widgets/
+    │           ├── termometro_orb.dart
+    │           └── guest_banner.dart
+    ├── transactions/
+    │   ├── data/
+    │   │   ├── transaction_model.dart
+    │   │   ├── local_transaction_service.dart
+    │   │   └── default_categories.dart
+    │   └── presentation/
+    │       ├── providers/transaction_provider.dart
+    │       ├── screens/transaction_form_screen.dart
+    │       └── widgets/transaction_tile.dart
+    ├── recurring/
+    │   ├── data/
+    │   │   ├── recurring_model.dart
+    │   │   └── local_recurring_service.dart
+    │   └── presentation/
+    │       ├── providers/recurring_provider.dart
+    │       └── screens/
+    │           ├── recurring_list_screen.dart
+    │           └── recurring_form_screen.dart
+    ├── journal/
+    │   ├── data/
+    │   │   ├── journal_model.dart
+    │   │   └── local_journal_service.dart
+    │   └── presentation/
+    │       ├── providers/journal_provider.dart
+    │       └── screens/
+    │           ├── journal_list_screen.dart
+    │           └── journal_form_screen.dart
+    ├── budget/
+    │   ├── data/
+    │   │   ├── budget_model.dart
+    │   │   └── local_budget_service.dart
+    │   └── presentation/
+    │       ├── providers/budget_provider.dart
+    │       └── screens/
+    │           ├── budget_list_screen.dart
+    │           └── budget_form_screen.dart
+    └── settings/
+        └── presentation/
+            └── screens/settings_screen.dart
+```
 
 ## Setup
 
