@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../features/budget/presentation/screens/budget_list_screen.dart';
 
 import '../../core/services/guest_service.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
@@ -60,6 +61,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/journal',
         builder: (_, __) => const JournalListScreen(),
+      ),
+      GoRoute(
+        path: '/budget',
+        builder: (_, __) => const BudgetListScreen(),
       ),
     ],
   );

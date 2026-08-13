@@ -1,4 +1,3 @@
-import '../../../../features/recurring/presentation/screens/recurring_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -94,6 +93,12 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.people_outline),
             title: const Text('Espaços compartilhados'),
             onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.pie_chart_outline),
+            title: const Text('Orçamento por categoria'),
+            subtitle: const Text('Tetos mensais por tipo de gasto'),
+            onTap: () => context.push('/budget'),
           ),
           const Divider(height: 40),
           ListTile(
