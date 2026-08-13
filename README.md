@@ -44,6 +44,9 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 - **Sessão persistida** — não desloga ao fechar o app
 - **Deploy web** — acessível em qualquer navegador via Vercel
 - **Banco de dados** — Supabase (Postgres) com Row Level Security
+- **Sync offline** — fila de sincronização automática com Supabase ao voltar online
+- **Indicador de sync** — mostra status no dashboard (sincronizando, pendente, erro, sincronizado)
+- **Detecção automática de rede** — connectivity_plus monitora e sincroniza quando volta online
 
 ## Roadmap
 
@@ -53,6 +56,7 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 | **V2** | 📋 Planejado | Compartilhamento de espaços, mapa de gastos, comprovantes/anexos |
 | **V3** | 📋 Planejado | OCR de notas, busca avançada, IA financeira |
 | **V4** | 📋 Planejado | QR Code, Pix, Open Finance |
+| **V1** | ✅ Completo | Login, modo visitante, transações, GPS, mapa, categorias, orçamento, contas recorrentes, diário financeiro, sync offline |
 
 ## Stack
 
