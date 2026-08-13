@@ -1,3 +1,4 @@
+import '../../../../features/recurring/presentation/screens/recurring_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -76,6 +77,12 @@ class SettingsScreen extends ConsumerWidget {
             title: const Text('Notificações'),
             subtitle: const Text('Termômetro, contas futuras'),
             onTap: () {},
+          ),
+          ListTile(
+            leading: const Icon(Icons.repeat),
+            title: const Text('Contas recorrentes'),
+            subtitle: const Text('Aluguel, internet, assinaturas'),
+            onTap: () => context.push('/recurring'),
           ),
           ListTile(
             leading: const Icon(Icons.people_outline),
