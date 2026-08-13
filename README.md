@@ -36,6 +36,9 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 - **Sessão persistida** — não desloga ao fechar o app
 - **Deploy web** — acessível em qualquer navegador via Vercel
 - **Banco de dados** — Supabase (Postgres) com Row Level Security
+- **GPS automático** — captura localização ao registrar transação (reverse geocoding via Nominatim)
+- **Mapa com pin** — ajuste visual da localização no mapa (OpenStreetMap + flutter_map)
+- **Edição manual de endereço** — corrija o endereço digitando direto
 
 ## Roadmap
 
