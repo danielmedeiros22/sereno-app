@@ -1,132 +1,175 @@
-# Sereno — App Financeiro
+<div align="center">
 
-Boilerplate Flutter funcional. Roda Android, iOS e Web em uma base.
+# 💜 Sereno
 
-## 🚀 Setup em 5 passos
+**Suas finanças com calma.**
 
-### 1. Instale o Flutter
+Controle financeiro pessoal e compartilhado — Web, Android e iOS em uma base Flutter.
 
-Se ainda não tem: https://docs.flutter.dev/get-started/install
-Confirme com:
+![Flutter](https://img.shields.io/badge/Flutter-3.24+-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?logo=supabase&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+🌐 **[Acessar o app](https://sereno-app-beta.vercel.app)**
+
+</div>
+
+---
+
+## Sobre
+
+Sereno é um app de controle financeiro que organiza suas finanças em **Espaços** — Pessoal, Casa, Empresa, Viagem — com sincronização offline, orçamento por categoria e um indicador visual exclusivo chamado **Termômetro Sereno** que mostra em tempo real como seus gastos estão em relação ao teto que você definiu.
+
+## O que já funciona
+
+- **Login com Google e Apple** — autenticação via Supabase OAuth, sem senha
+- **Modo visitante** — use sem criar conta, dados ficam salvos no dispositivo
+- **Dashboard** — saldo atual, entradas/saídas do mês, orbe do Termômetro
+- **Termômetro Sereno** — orbe animada que muda cor e expressão conforme os gastos (5 estados)
+- **Formulário de transações** — registre entradas e saídas com valor, categoria, data e descrição
+- **22 categorias com emojis** — 15 de despesa (Alimentação, Transporte, etc) e 7 de receita (Salário, Freelance, etc)
+- **Lista de movimentações** — agrupada por data (Hoje, Ontem, etc), swipe pra deletar
+- **Saldo calculado automaticamente** — entradas − saídas do mês
+- **Tema Light + Dark** — Material 3, segue preferência do sistema
+- **Auth guard** — redirecionamento automático por estado de autenticação
+- **Sessão persistida** — não desloga ao fechar o app
+- **Deploy web** — acessível em qualquer navegador via Vercel
+- **Banco de dados** — Supabase (Postgres) com Row Level Security
+
+## Roadmap
+
+| Versão | Status | Features |
+|--------|--------|----------|
+| **V1** | 🚧 Em desenvolvimento | GPS, cartão de crédito, parcelamento, contas futuras, recorrências, diário financeiro, sync offline |
+| **V2** | 📋 Planejado | Compartilhamento de espaços, mapa de gastos, comprovantes/anexos |
+| **V3** | 📋 Planejado | OCR de notas, busca avançada, IA financeira |
+| **V4** | 📋 Planejado | QR Code, Pix, Open Finance |
+
+## Stack
+
+| Camada | Tecnologia |
+|--------|-----------|
+| Frontend | Flutter (Web + Android + iOS) |
+| State Management | Riverpod |
+| Navegação | GoRouter |
+| Backend | NestJS + Prisma (planejado) |
+| Auth | Supabase OAuth (Google + Apple) |
+| Banco de dados | Supabase (Postgres) + SQLite local (Drift) |
+| Mapas | OpenStreetMap + flutter_map + Nominatim |
+| Tipografia | Inter (UI) + Fraunces (display) via Google Fonts |
+
+## Paleta de Cores
+
+| Cor | Hex | Uso |
+|-----|-----|-----|
+| 🔵 Primária | `#3B82F6` | Azul confiança — botões, links |
+| 🟢 Secundária | `#14B8A6` | Verde-água — entradas, estado calmo |
+| 🟠 Alerta | `#F97316` | Âmbar — saídas, alertas |
+| 🟣 Acento | `#8B5CF6` | Lilás — destaques, gradientes |
+
+## Estrutura do Projeto
+
+lib/
+├── main.dart
+├── app/
+│ ├── app.dart
+│ ├── theme/
+│ │ ├── app_colors.dart
+│ │ ├── app_typography.dart
+│ │ └── app_theme.dart
+│ └── router/
+│ └── app_router.dart
+├── core/
+│ ├── constants/app_constants.dart
+│ ├── network/supabase_client.dart
+│ └── services/guest_service.dart
+└── features/
+├── auth/
+│ └── presentation/
+│ ├── providers/auth_provider.dart
+│ ├── screens/welcome_screen.dart
+│ ├── screens/login_screen.dart
+│ └── widgets/oauth_buttons.dart
+├── dashboard/
+│ └── presentation/
+│ ├── screens/dashboard_screen.dart
+│ └── widgets/
+│ ├── termometro_orb.dart
+│ └── guest_banner.dart
+├── transactions/
+│ ├── data/
+│ │ ├── transaction_model.dart
+│ │ ├── local_transaction_service.dart
+│ │ └── default_categories.dart
+│ └── presentation/
+│ ├── providers/transaction_provider.dart
+│ ├── screens/transaction_form_screen.dart
+│ └── widgets/transaction_tile.dart
+└── settings/
+└── presentation/
+└── screens/settings_screen.dart
+
+## Setup
+
+### Pré-requisitos
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) 3.24+
+- Conta no [Supabase](https://supabase.com)
+- Projeto no [Google Cloud Console](https://console.cloud.google.com) com OAuth
+
+### 1. Clone e configure
+
 ```bash
-flutter --version    # deve ser 3.24+
-flutter doctor       # resolva os pontos vermelhos
-```
-
-### 2. Extraia este projeto
-
-```bash
-unzip sereno_app.zip
-cd sereno_app
+git clone https://github.com/danielmedeiros22/sereno-app.git
+cd sereno-app
+cp .env.example .env
+# Preencha .env com suas credenciais
 flutter pub get
 ```
 
-### 3. Configure o Supabase
+### 2. Configure o Supabase
 
-Você precisa ter aplicado a migração SQL (`supabase-migration.sql`) num projeto Supabase.
+1. Crie um projeto no Supabase (South America - São Paulo)
+2. Aplique a migração SQL em **SQL Editor** (`docs/supabase-migration.sql`)
+3. Ative Google em **Authentication > Sign In / Providers**
+4. Em **URL Configuration**, adicione seu domínio
 
-Copie o exemplo e preencha:
-```bash
-cp .env.example .env
-```
-
-Edite `.env`:
-```
-SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_ANON_KEY=eyJ...
-GOOGLE_WEB_CLIENT_ID=xxx.apps.googleusercontent.com
-```
-
-Pegue os valores em: Supabase Dashboard → Project Settings → API.
-
-### 4. Configure OAuth
-
-Siga o `guia-aplicacao-supabase.md` para:
-- Habilitar Google no Supabase (Auth → Providers)
-- Habilitar Apple no Supabase (opcional, só iOS)
-- Configurar deep link `io.sereno.app://login-callback`
-
-### 5. Rode!
+### 3. Rode
 
 ```bash
-# Web
-flutter run -d chrome
-
-# Android (com celular ou emulador conectado)
-flutter run -d android
-
-# iOS (macOS necessário)
-flutter run -d ios
+flutter run -d chrome --web-port=5000
 ```
 
-Vai abrir a **Welcome screen** → toque em "Começar" → **Login** → entre com Google ou Apple → cai no **Dashboard**.
+### Deploy (Vercel)
 
-## 📁 O que já está funcionando
-
-- ✅ Tema Light + Dark com Material 3 e a paleta oficial
-- ✅ Tipografia Inter + Fraunces via Google Fonts
-- ✅ Router com auth guard automático (GoRouter + Riverpod)
-- ✅ Login Google e Apple via Supabase OAuth
-- ✅ Sessão persistida (não desloga ao fechar o app)
-- ✅ Dashboard com saudação personalizada + a **orbe do Termômetro** funcionando
-- ✅ Bottom sheet de "Meus Limites" com slider animado, toggle de precisão (R$10/R$100), botões ± e input direto
-- ✅ Cores da orbe reagem em tempo real ao percentual
-- ✅ Logout funcional
-
-## 🚧 O que virá em próximos incrementos
-
-- CRUD de transações (formulário completo com GPS)
-- Espaços compartilhados
-- Sincronização offline (Drift + fila local)
-- Categorias e orçamento
-- Cartão de crédito e parcelamento
-- Diário financeiro
-- Contas recorrentes
-
-## 📂 Estrutura
-
-```
-lib/
-├── main.dart              # entrypoint
-├── app/
-│   ├── app.dart           # MaterialApp raiz
-│   ├── theme/             # cores, tipografia, tema light/dark
-│   └── router/            # GoRouter + auth guard
-├── core/
-│   ├── constants/         # AppConstants
-│   └── network/           # SupabaseService
-└── features/
-    ├── auth/              # welcome, login, providers
-    ├── dashboard/         # tela principal + TermometroOrb widget
-    └── settings/          # ajustes e logout
+```bash
+flutter build web
+Copy-Item .env build\web\assets\.env -Force
+cd build\web
+vercel --prod
 ```
 
-## 🐛 Troubleshooting
+## Termômetro Sereno
 
-**"Missing required arguments: url, anonKey"**
-→ Você não configurou o `.env`. Volte no passo 3.
+O recurso mais distintivo do app. Uma orbe animada que reage aos seus gastos:
 
-**Google sign-in erro "PlatformException(sign_in_failed, ...)"**
-→ Você precisa configurar o OAuth Client ID no Google Cloud Console pro seu package name/SHA-1. Veja o guia.
+| Estado | Faixa | Cor | Comportamento |
+|--------|-------|-----|---------------|
+| Serena | 0-50% | `#14B8A6` | Respira devagar |
+| Atenta | 50-75% | `#3B82F6` | Respira normal |
+| Alerta | 75-90% | `#EAB308` | Respira rápido |
+| Preocupada | 90-100% | `#F97316` | Pulsa forte |
+| Estourou | >100% | `#EF4444` | Vibra + shake |
 
-**Apple sign-in erro no Android**
-→ Normal — Apple sign-in não funciona nativamente no Android. O botão aparece só em iOS/macOS/Web.
+Implementado como `CustomPainter` com `AnimationController` — sem dependências externas.
 
-**"MissingPluginException" ao rodar Web**
-→ Rode `flutter clean && flutter pub get` e tente de novo.
+## Licença
 
-## 🎨 Testando o Termômetro
+MIT
 
-Após logar, toque na orbe pequena no canto superior direito do Dashboard. Abre um bottom sheet com o slider. Arraste, use os botões ± ou digite direto no valor. A orbe grande dentro do sheet e a pequena do dashboard reagem em tempo real.
+---
 
-Pra testar visualmente os 5 estados sem gastar de verdade, você pode temporariamente editar `_spent` no `dashboard_screen.dart`:
-
-```dart
-double _spent = 500;   // Serena
-double _spent = 2500;  // Atenta
-double _spent = 3100;  // Alerta
-double _spent = 3400;  // Preocupada
-double _spent = 4200;  // Estourou
-```
-
-E hot reload.
+<div align="center">
+Feito com 💜 para quem quer paz financeira.
+</div>
