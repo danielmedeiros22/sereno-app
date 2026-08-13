@@ -58,6 +58,24 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 | **V4** | 📋 Planejado | QR Code, Pix, Open Finance |
 | **V1** | ✅ Completo | Login, modo visitante, transações, GPS, mapa, categorias, orçamento, contas recorrentes, diário financeiro, sync offline |
 
+O V1 do Sereno está completo com tudo funcionando na web:
+
+✅ Login (Google, Apple, Visitante)
+✅ Dashboard com Termômetro Sereno
+✅ CRUD de transações com 22 categorias
+✅ GPS automático + mapa com pin
+✅ Contas recorrentes
+✅ Diário financeiro
+✅ Orçamento por categoria
+✅ Sync offline
+✅ Deploy no Vercel
+✅ Documentação no GitHub
+
+Perfeito! O APK fica pra quando quiser — o comando é simples quando estiver pronto:
+
+powershell
+flutter build apk --release
+
 ## Stack
 
 | Camada | Tecnologia |
