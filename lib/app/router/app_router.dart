@@ -1,9 +1,7 @@
-import '../../features/recurring/presentation/screens/recurring_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 
 import '../../core/services/guest_service.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
@@ -11,6 +9,8 @@ import '../../features/auth/presentation/screens/welcome_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../features/recurring/presentation/screens/recurring_list_screen.dart';
+import '../../features/journal/presentation/screens/journal_list_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshListener = RouterRefreshListener(ref);
@@ -56,6 +56,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/recurring',
         builder: (_, __) => const RecurringListScreen(),
+      ),
+      GoRoute(
+        path: '/journal',
+        builder: (_, __) => const JournalListScreen(),
       ),
     ],
   );

@@ -85,6 +85,12 @@ class SettingsScreen extends ConsumerWidget {
             onTap: () => context.push('/recurring'),
           ),
           ListTile(
+            leading: const Icon(Icons.auto_stories_outlined),
+            title: const Text('Diário financeiro'),
+            subtitle: const Text('Reflexões sobre suas finanças'),
+            onTap: () => context.push('/journal'),
+          ),
+          ListTile(
             leading: const Icon(Icons.people_outline),
             title: const Text('Espaços compartilhados'),
             onTap: () {},
