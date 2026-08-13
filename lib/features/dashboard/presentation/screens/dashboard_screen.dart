@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../../core/services/sync/sync_indicator.dart';
+import '../../../../core/services/notifications/notification_banner.dart';
+import '../../../../core/services/notifications/notification_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../transactions/data/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
@@ -23,6 +25,20 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   double _limit = 3500;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotifications();
+  }
+
+  void _checkNotifications() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final service = ref.read(notificationServiceProvider);
+      service.initialize();
+      service.checkRecurringBills();
+    });
+  }
 
   void _openForm() async {
     await Navigator.of(context).push<bool>(
@@ -65,6 +81,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     const SyncIndicator(),
                     const SizedBox(height: 8),
                   ],
+                  const NotificationBanner(),
                   _buildSpaceSwitcher(theme),
                   const SizedBox(height: 24),
                   Text('Olá, $displayName 👋', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
@@ -258,7 +275,7 @@ class _LimitsSheetState extends State<_LimitsSheet> {
         const SizedBox(height: 20),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
           Text('TETO MENSAL', style: theme.textTheme.labelSmall),
-          SizedBox(width: 140, child: TextField(controller: _textController, keyboardType: TextInputType.number, textAlign: TextAlign.right, style: theme.textTheme.headlineLarge?.copyWith(color: color), decoration: const InputDecoration(prefixText: 'R\$ ', border: InputBorder.none), onSubmitted: (v) { final p = double.tryParse(v); if (p != null) { _limit = p.clamp(100, 50000); widget.onChanged(_limit); } })),
+          SizedBox(width: 140, child: TextField(controller: _textController, keyboardType: TextInputType.number, textAlign: TextAlign.right, style: theme.textTheme.headlineLarge?.copyWith(color: color), decoration: const InputDecoration(prefixText: 'R\$ ', border: InputBorder.none), onSubmitted: (v) { final p = double.tryParse(v); if (p != null) { setState(() { _limit = p.clamp(100, 50000); }); widget.onChanged(_limit); } })),
         ]),
         const SizedBox(height: 20),
         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Gasto atual', style: theme.textTheme.bodySmall), Text(currency.format(widget.currentSpent), style: theme.textTheme.titleMedium)]),
