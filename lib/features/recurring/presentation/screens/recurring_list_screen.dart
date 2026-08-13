@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../data/recurring_model.dart';
 import '../providers/recurring_provider.dart';
 import 'recurring_form_screen.dart';
 

@@ -151,12 +151,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: AppColors.primary, size: 20),
+                      const Icon(Icons.location_on, color: AppColors.primary, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: _loadingAddress
                             ? Row(children: [
-                                SizedBox(
+                                const SizedBox(
                                     width: 14,
                                     height: 14,
                                     child: CircularProgressIndicator(

@@ -183,7 +183,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today_outlined, size: 20, color: AppColors.primary),
+                  const Icon(Icons.calendar_today_outlined, size: 20, color: AppColors.primary),
                   const SizedBox(width: 12),
                   Text('Dia', style: theme.textTheme.bodyMedium),
                   const Spacer(),

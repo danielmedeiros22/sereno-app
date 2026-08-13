@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/guest_service.dart';
+import '../../../../core/services/sync/sync_indicator.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../transactions/data/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
@@ -60,6 +61,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 8),
                   if (isGuest) ...[const GuestBanner(), const SizedBox(height: 16)],
+                  if (!isGuest) ...[
+                    const SyncIndicator(),
+                    const SizedBox(height: 8),
+                  ],
                   _buildSpaceSwitcher(theme),
                   const SizedBox(height: 24),
                   Text('Olá, $displayName 👋', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
