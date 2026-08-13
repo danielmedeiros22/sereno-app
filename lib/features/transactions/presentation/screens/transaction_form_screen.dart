@@ -8,6 +8,7 @@ import '../../../../core/services/location_service.dart';
 import '../../data/default_categories.dart';
 import '../../data/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import '../../../../core/services/map_picker_screen.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
   const TransactionFormScreen({super.key});
@@ -46,6 +47,26 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       setState(() {
         _location = result;
         _loadingLocation = false;
+      });
+    }
+  }
+
+  Future<void> _editAddress() async {
+    if (_location == null) return;
+
+    final result = await Navigator.of(context).push<LocationResult>(
+      MaterialPageRoute(
+        builder: (_) => MapPickerScreen(
+          initialLat: _location!.latitude,
+          initialLng: _location!.longitude,
+          initialAddress: _location!.address,
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _location = result;
       });
     }
   }
@@ -184,17 +205,14 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             children: [
               Icon(Icons.location_off_outlined,
                   size: 20,
-                  color:
-                      theme.colorScheme.onSurface.withValues(alpha: 0.3)),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
               const SizedBox(width: 12),
               Text('Localização desativada',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.4))),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
               const Spacer(),
               Text('Ativar',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: _activeColor)),
+                  style: theme.textTheme.bodySmall?.copyWith(color: _activeColor)),
             ],
           ),
         ),
@@ -211,9 +229,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       child: Row(
         children: [
           Icon(
-            _loadingLocation
-                ? Icons.my_location
-                : Icons.location_on_outlined,
+            _loadingLocation ? Icons.my_location : Icons.location_on_outlined,
             size: 20,
             color: _location != null
                 ? _activeColor
@@ -231,21 +247,25 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                     const SizedBox(width: 8),
                     Text('Buscando localização...',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.5))),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                   ])
                 : _location != null
-                    ? Text(
-                        _location!.address ??
-                            '${_location!.latitude.toStringAsFixed(4)}, ${_location!.longitude.toStringAsFixed(4)}',
-                        style: theme.textTheme.bodyMedium,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    ? GestureDetector(
+                        onTap: () => _editAddress(),
+                        child: Text(
+                          _location!.address ??
+                              '${_location!.latitude.toStringAsFixed(4)}, ${_location!.longitude.toStringAsFixed(4)}',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            decoration: TextDecoration.underline,
+                            decorationStyle: TextDecorationStyle.dotted,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       )
                     : Text('Localização indisponível',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface
-                                .withValues(alpha: 0.4))),
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
           ),
           IconButton(
             onPressed: () => setState(() {
@@ -254,8 +274,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             }),
             icon: Icon(Icons.close,
                 size: 16,
-                color:
-                    theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
             constraints: const BoxConstraints(),
             padding: EdgeInsets.zero,
           ),
@@ -273,20 +292,15 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       ),
       child: Row(
         children: [
-          Expanded(
-              child: _typeButton(
-                  'expense', 'Saída', Icons.arrow_downward, theme)),
+          Expanded(child: _typeButton('expense', 'Saída', Icons.arrow_downward, theme)),
           const SizedBox(width: 4),
-          Expanded(
-              child: _typeButton(
-                  'income', 'Entrada', Icons.arrow_upward, theme)),
+          Expanded(child: _typeButton('income', 'Entrada', Icons.arrow_upward, theme)),
         ],
       ),
     );
   }
 
-  Widget _typeButton(
-      String type, String label, IconData icon, ThemeData theme) {
+  Widget _typeButton(String type, String label, IconData icon, ThemeData theme) {
     final active = _type == type;
     final color = type == 'income' ? AppColors.income : AppColors.expense;
 
@@ -301,32 +315,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color:
-              active ? color.withValues(alpha: 0.15) : Colors.transparent,
+          color: active ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: active
-              ? Border.all(color: color.withValues(alpha: 0.4))
-              : null,
+          border: active ? Border.all(color: color.withValues(alpha: 0.4)) : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon,
-                size: 18,
-                color: active
-                    ? color
-                    : theme.colorScheme.onSurface
-                        .withValues(alpha: 0.4)),
+            Icon(icon, size: 18, color: active ? color : theme.colorScheme.onSurface.withValues(alpha: 0.4)),
             const SizedBox(width: 8),
             Text(
               label,
               style: theme.textTheme.titleSmall?.copyWith(
-                color: active
-                    ? color
-                    : theme.colorScheme.onSurface
-                        .withValues(alpha: 0.4),
-                fontWeight:
-                    active ? FontWeight.w600 : FontWeight.normal,
+                color: active ? color : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                fontWeight: active ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
           ],
@@ -342,8 +344,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         Text(
           _type == 'income' ? 'Quanto entrou?' : 'Quanto gastou?',
           style: theme.textTheme.bodyMedium?.copyWith(
-              color:
-                  theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
         ),
         const SizedBox(height: 8),
         Row(
@@ -353,8 +354,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text('R\$',
-                  style: theme.textTheme.headlineMedium
-                      ?.copyWith(color: _activeColor)),
+                  style: theme.textTheme.headlineMedium?.copyWith(color: _activeColor)),
             ),
             const SizedBox(width: 8),
             SizedBox(
@@ -362,21 +362,17 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               child: TextField(
                 controller: _amountController,
                 autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(
-                      RegExp(r'[\d.,]')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
                 ],
                 style: theme.textTheme.displayMedium?.copyWith(
-                    color: _activeColor,
-                    fontWeight: FontWeight.w700),
+                    color: _activeColor, fontWeight: FontWeight.w700),
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   hintText: '0,00',
                   hintStyle: theme.textTheme.displayMedium?.copyWith(
-                      color: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.15)),
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.15)),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -395,8 +391,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       onTap: _pickDate,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
@@ -404,18 +399,14 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         ),
         child: Row(
           children: [
-            Icon(Icons.calendar_today_outlined,
-                size: 20, color: _activeColor),
+            Icon(Icons.calendar_today_outlined, size: 20, color: _activeColor),
             const SizedBox(width: 12),
             Expanded(
                 child: Text(
-                    isToday
-                        ? 'Hoje'
-                        : DateFormat('dd/MM/yyyy').format(_date),
+                    isToday ? 'Hoje' : DateFormat('dd/MM/yyyy').format(_date),
                     style: theme.textTheme.bodyLarge)),
             Icon(Icons.chevron_right,
-                color: theme.colorScheme.onSurface
-                    .withValues(alpha: 0.3)),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3)),
           ],
         ),
       ),
@@ -429,39 +420,30 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       children: _filteredCategories.map((cat) {
         final active = _selectedCategory?.name == cat.name;
         return GestureDetector(
-          onTap: () =>
-              setState(() => _selectedCategory = cat),
+          onTap: () => setState(() => _selectedCategory = cat),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               color: active
                   ? _activeColor.withValues(alpha: 0.15)
                   : theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: active
-                    ? _activeColor
-                    : theme.colorScheme.outline,
+                color: active ? _activeColor : theme.colorScheme.outline,
                 width: active ? 1.5 : 1,
               ),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(cat.icon,
-                    style: const TextStyle(fontSize: 16)),
+                Text(cat.icon, style: const TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
                 Text(
                   cat.name,
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: active
-                        ? _activeColor
-                        : theme.colorScheme.onSurface,
-                    fontWeight: active
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                    color: active ? _activeColor : theme.colorScheme.onSurface,
+                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
                   ),
                 ),
               ],
