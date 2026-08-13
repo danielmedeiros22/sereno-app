@@ -51,7 +51,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   }
 
   Future<void> _save() async {
-    final amountText = _amountController.text.replaceAll(',', '.').replaceAll(' ', '');
+    final amountText = _amountController.text.replaceAll(' ', '').replaceAll('.', '').replaceAll(',', '.');
     final amount = double.tryParse(amountText);
 
     if (amount == null || amount <= 0) {
