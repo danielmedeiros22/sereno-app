@@ -9,6 +9,8 @@ class TransactionModel {
   final String? description;
   final DateTime date;
   final String? location;
+  final double? latitude;
+  final double? longitude;
   final DateTime createdAt;
 
   TransactionModel({
@@ -20,6 +22,8 @@ class TransactionModel {
     this.description,
     required this.date,
     this.location,
+    this.latitude,
+    this.longitude,
     DateTime? createdAt,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
@@ -33,6 +37,8 @@ class TransactionModel {
         'description': description,
         'date': date.toIso8601String(),
         'location': location,
+        'latitude': latitude,
+        'longitude': longitude,
         'createdAt': createdAt.toIso8601String(),
       };
 
@@ -46,10 +52,13 @@ class TransactionModel {
       description: json['description'],
       date: DateTime.parse(json['date']),
       location: json['location'],
+      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
+      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
       createdAt: DateTime.parse(json['createdAt']),
     );
   }
 
   bool get isIncome => type == 'income';
   bool get isExpense => type == 'expense';
+  bool get hasLocation => latitude != null && longitude != null;
 }
