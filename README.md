@@ -195,6 +195,28 @@ lib/
 - Conta no [Supabase](https://supabase.com)
 - Projeto no [Google Cloud Console](https://console.cloud.google.com) com OAuth
 
+### Referência do login Google do Sereno
+
+> **Sincronização por conta:** entradas, saídas e teto mensal usam o Supabase. Entre com a mesma conta nos dispositivos e confirme a importação dos lançamentos antigos em cada um deles. Consulte [Sincronização dos lançamentos](docs/transaction-sync.md) para funcionamento, validação e limites do recurso.
+
+> **Conta Google com acesso confirmado: `danyellmedeiros22@gmail.com` (Danyell Medeiros).**
+> O projeto existente é **App financeiro**. Use essa conta e esse projeto para consultar a configuração OAuth do Sereno.
+
+| Identificação | Valor verificado em 09/10/2026 |
+| --- | --- |
+| Conta Google com acesso | `danyellmedeiros22@gmail.com` |
+| Nome do projeto | **App financeiro** |
+| Organização exibida | `danyellmedeiros22-org` |
+| Número do projeto | `956821237585` |
+| ID do projeto | `project-1777b660-d79a-4253-9eb` |
+| Painel | [Abrir o projeto no Google Cloud](https://console.cloud.google.com/welcome?project=project-1777b660-d79a-4253-9eb) |
+
+**Como a correspondência foi conferida:** o número do projeto no Google Cloud coincide com o prefixo numérico do `GOOGLE_WEB_CLIENT_ID` configurado no `.env` local. A sessão Google consultada estava conectada à conta acima. A página IAM apresentou erro de carregamento; portanto, o acesso foi confirmado, mas o papel de proprietária não foi verificado.
+
+O fluxo de login Google já existe no aplicativo, em `lib/features/auth/presentation/providers/auth_provider.dart`. Na Web, ele usa o provedor Google do Supabase; no mobile, usa `google_sign_in` com `GOOGLE_WEB_CLIENT_ID`. Para conferir as credenciais do fluxo Web, consulte **Authentication > Sign In / Providers > Google** no [projeto Supabase atual](https://supabase.com/dashboard/project/rdlofauxvsbdytvvmlzd).
+
+Esta verificação foi somente de leitura: nenhuma credencial, permissão ou configuração de autenticação foi alterada. Não registrar client secrets, tokens ou chaves privadas nesta documentação nem no repositório.
+
 ### 1. Clone e configure
 
 ```bash
@@ -223,7 +245,7 @@ Abra `http://localhost:5000` manualmente no navegador habitual e mantenha o term
 
 ### Deploy (Vercel)
 
-A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os 18 testes do teto e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
+A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os testes direcionados do teto e dos lançamentos e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
 
 - **`main`**: cada push/merge inicia um deploy de produção. A nova versão entra no domínio público depois do build aprovado.
 - **Outras branches/PRs**: geram uma URL de prévia para revisão.

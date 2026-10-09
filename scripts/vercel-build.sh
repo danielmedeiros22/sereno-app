@@ -19,10 +19,11 @@ export PATH="$sdk_dir/bin:$PATH"
 export CI=true
 flutter config --no-analytics --enable-web
 flutter pub get --enforce-lockfile
-flutter test --no-pub test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart
-flutter analyze --no-pub lib/features/dashboard test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart
+flutter test --no-pub test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart test/transaction_sync_service_test.dart test/transaction_sync_banner_test.dart
+flutter analyze --no-pub lib/features/dashboard lib/features/transactions/data lib/features/transactions/presentation/providers lib/features/transactions/presentation/widgets/transaction_sync_banner.dart test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart test/transaction_sync_service_test.dart test/transaction_sync_banner_test.dart
 flutter build web --release --no-pub --no-wasm-dry-run
 
 # Flutter distributes this file publicly. Only client parameters belong here.
 test -f build/web/assets/.env
 grep -q '^MONTHLY_LIMIT_CLOUD_SYNC=true' build/web/assets/.env
+grep -q '^TRANSACTION_CLOUD_SYNC=true' build/web/assets/.env
