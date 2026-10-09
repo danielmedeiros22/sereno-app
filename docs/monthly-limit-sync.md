@@ -1,56 +1,96 @@
-# Sincronização do teto mensal
+# Teto mensal: persistência, confirmação e sincronização
 
-Implementação com publicação autorizada em 09/10/2026. A tabela foi criada no projeto Supabase atual `rdlofauxvsbdytvvmlzd` em 09/10/2026, após autorização do usuário. A sincronização está ativada no `.env` local; o build inclui essa flag para ativar a sincronização.
+Estado documentado em 09/10/2026. A correção está publicada em [Sereno](https://sereno-app-beta.vercel.app/).
 
-## Estado verificado
+## Uso e valores permitidos
 
-- Tabela `monthly_spending_limits` criada com RLS ativo, três políticas de acesso e leitura anônima recusada.
-- Testes reais no SQL Editor passaram: escrita/leitura da própria conta, bloqueio de outra identidade e de visitante, faixa de valores e timestamp gerado no servidor. O teste usou uma conta existente apenas dentro da transação e terminou com rollback, sem criar contas nem deixar valores de teste no banco.
-- Os 15 testes direcionados passaram; análise sem problemas. O build Web anterior passou. A ativação da flag exige reiniciar o processo Flutter para recarregar `.env`.
-- URL e chave pública existentes não foram alteradas. Backup do `.env` anterior em `_backup_prototipo_20261008/.env.before-monthly-limit-sync`.
-- Falta o teste manual final de login e sincronização entre dois navegadores/dispositivos. A conferência autenticada em dois dispositivos deve ser realizada com a mesma conta.
+1. Abrir **Meus limites** pelo indicador do dashboard.
+2. Digitar um valor entre **R$ 1 e R$ 50.000**, incluindo centavos com vírgula ou ponto.
+3. Selecionar **Salvar alteração** e conferir o teto atual e o novo na caixa de confirmação.
+4. Selecionar **Confirmar** para gravar. Digitar, cancelar ou fechar o rascunho não grava.
 
-## Ambiente de desenvolvimento
+R$ 1 e R$ 50 são aceitos. O mínimo anterior de R$ 100 foi removido tanto da validação Flutter quanto da restrição do banco. R$ 0,99, zero e valores negativos não são aceitos; o máximo permanece R$ 50.000.
 
-1. Criar um projeto Supabase separado, destinado a desenvolvimento. Não usar o projeto atual de produção para estes testes.
-2. No SQL Editor desse projeto, executar `supabase/migrations/202610090001_monthly_spending_limits.sql` uma única vez. A migração é transacional e adiciona uma tabela, políticas RLS e um trigger; não altera tabelas existentes.
-3. Configurar o login Google/Apple no projeto de desenvolvimento, permitindo `http://localhost:5000` nos redirects. O restante do Sereno também depende das tabelas existentes do aplicativo; este arquivo cria somente a estrutura do teto mensal.
-4. Fazer uma cópia privada do `.env` atual antes de apontar o ambiente local ao projeto de desenvolvimento. Não enviar o arquivo a terceiros. Atualizar localmente `SUPABASE_URL` e a chave pública de cliente (`SUPABASE_ANON_KEY`), sem usar service-role.
-5. Acrescentar ao `.env` local: `MONTHLY_LIMIT_CLOUD_SYNC=true`. Sem essa opção, o novo recurso não faz requisições ao Supabase. O modo visitante permanece local em qualquer configuração.
-6. Reiniciar o Flutter (recarregar somente o código não recarrega o asset `.env`). Executar `flutter run -d web-server --web-hostname=localhost --web-port=5000` e abrir o endereço no navegador habitual.
+R$ 3.500 é apenas o padrão na ausência de um valor salvo e nunca é enviado automaticamente ao Supabase. O teto é uma configuração mensal recorrente da conta, sem histórico separado por mês.
 
-A seção acima descreve como configurar um ambiente separado caso necessário no futuro. No ambiente atual, não reaplicar a migração: a tabela já existe. Somente a flag foi acrescentada ao `.env`; configurações da Vercel e demais tabelas permanecem preservadas. A flag serve para ativação controlada do novo recurso, não para desativar os outros serviços Supabase existentes.
+## Persistência e sincronização
 
-## Comportamento
+- Visitantes: SharedPreferences no navegador/dispositivo atual. Usar o mesmo perfil, host e porta para recuperar o valor. Limpar os dados do site ou usar perfil temporário remove esse cache.
+- Contas autenticadas: cache e pendências separados por ID da conta, sincronizados com `public.monthly_spending_limits`. O teto do visitante não é importado automaticamente para uma conta.
+- Depois da confirmação, o valor é salvo localmente primeiro. A sincronização é agendada após 600 ms, ao abrir o dashboard, retomar o app, recuperar conexão e a cada 30 segundos enquanto o dashboard estiver ativo.
+- Sem rede ou diante de falha, a alteração permanece pendente após reiniciar. A interface informa a situação e oferece nova tentativa quando há erro.
+- O outro dispositivo carrega o valor ao abrir/retomar o dashboard ou na próxima atualização periódica. Não depende de Realtime.
+- Em conflito, vence a última gravação aceita pelo servidor, inclusive se uma edição offline for enviada depois. `updated_at` usa o relógio do servidor.
+- Respostas atrasadas não sobrescrevem uma edição local posterior nem limpam sua pendência.
+- A chave local antiga sem identificação do dono só é reaproveitada para visitantes.
 
-- Um teto por conta; representa o limite mensal recorrente, não uma configuração diferente para cada mês.
-- R$ 3.500 é somente o padrão quando não há teto salvo. Não é enviado automaticamente à nuvem.
-- Cache e pendências separados por ID da conta. Trocar de conta recria o estado e não transfere valores de uma conta ou do visitante para outra.
-- O valor local antigo não tinha identificação do dono. Ele permanece disponível ao visitante; uma conta autenticada deve buscar seu teto remoto ou informar o valor novamente.
-- A edição fica como rascunho até tocar em Salvar alteração e confirmar o valor atual e o novo teto. Cancelar não grava. Após confirmar, o valor é salvo localmente primeiro. A sincronização é agendada após 600 ms sem novas edições, ao abrir o dashboard, retomar o app, recuperar conexão e a cada 30 s enquanto o dashboard está ativo.
-- Sem rede ou em caso de falha, a pendência continua salva após reiniciar. A interface mostra que a sincronização está pendente e oferece nova tentativa em caso de erro.
-- Conflitos: vence o último envio aceito pelo servidor. Uma edição offline enviada mais tarde pode substituir uma edição feita antes em outro dispositivo. `updated_at` é atribuído pelo servidor, não pelo relógio do cliente.
-- Respostas atrasadas não substituem uma edição local posterior nem limpam sua pendência.
-- Não é necessário habilitar Realtime: o outro dispositivo carrega o valor ao abrir/retomar ou no próximo intervalo de atualização.
-- O valor fica no navegador para visitantes; limpar dados do site ou usar perfil temporário remove o cache local.
+A opção pública `MONTHLY_LIMIT_CLOUD_SYNC=true` ativa o novo acesso ao Supabase para contas autenticadas. Sem ela, o teto permanece local. Alterar `.env` exige reiniciar o Flutter ou gerar novo build para recarregar o asset; hot reload não basta. URL e chave pública anteriores foram preservadas. Nunca colocar service-role ou segredos de servidor nesse arquivo, pois ele é distribuído como asset Web.
 
-## Verificação
+## Banco e migrações
 
-Executar `flutter test --no-pub test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart` e analisar os arquivos alterados. Os testes locais usam um remoto simulado: validam isolamento, retomada offline, segundo dispositivo, conflitos e requisições em andamento; não comprovam acesso ao banco real.
+Projeto atual: `rdlofauxvsbdytvvmlzd`. As duas migrações abaixo já foram aplicadas em 09/10/2026; conferir o esquema antes de executar novamente.
 
-Depois de aplicar a migração no projeto de desenvolvimento, executar `supabase/tests/monthly_spending_limits.sql` no SQL Editor. O teste verifica permissões de visitante, isolamento entre duas contas, faixa de valores e timestamp do servidor; usa dados temporários e termina com rollback. Usar exclusivamente um projeto de testes.
+| Migração | Efeito |
+| --- | --- |
+| [202610090001_monthly_spending_limits.sql](../supabase/migrations/202610090001_monthly_spending_limits.sql) | Cria a tabela do teto, RLS, três políticas por usuário e trigger de timestamp. |
+| [202610090002_monthly_limit_minimum_one.sql](../supabase/migrations/202610090002_monthly_limit_minimum_one.sql) | Reduz o mínimo de R$ 100 para R$ 1, mantendo o máximo de R$ 50.000. |
 
-Teste manual final em dois perfis de navegador:
+A segunda migração não altera valores salvos nem políticas de acesso. A tabela tem `user_id` como chave primária vinculada a `auth.users`, `amount numeric(12,2)` e `updated_at`. Usuários autenticados podem ler, inserir e atualizar somente a própria linha; acesso anônimo é recusado.
 
-1. Entrar com a mesma conta nos dois perfis; definir R$ 6.200 no primeiro e aguardar confirmação de sincronização.
-2. Abrir/retomar o segundo; conferir R$ 6.200. Alterar ali e conferir o primeiro.
-3. Interromper a rede, editar, fechar a guia, reabrir e restabelecer a rede; conferir a pendência e a sincronização.
-4. Entrar com outra conta; ela não deve ver o teto anterior. Voltar à primeira e conferir seu teto.
-5. Conferir visitante e login separadamente. Não deve haver importação automática do teto do visitante.
+Para um ambiente de desenvolvimento novo, preparar também as tabelas existentes do aplicativo, aplicar as duas migrações em ordem, configurar OAuth e permitir `http://localhost:5000` nos redirects. Usar os parâmetros públicos desse ambiente no `.env` local e ativar a flag. O SQL de teste que cria usuários fictícios deve ser executado exclusivamente em um projeto de testes.
 
-Em 09/10/2026, o usuário autorizou publicar após incluir a caixa de confirmação. A flag de sincronização deve acompanhar o build publicado.
+## Execução local
 
-## Correção do valor mínimo
-A migração 202610090002_monthly_limit_minimum_one.sql reduz o mínimo de R$ 100 para R$ 1, mantendo o máximo de R$ 50.000. Não altera valores salvos nem políticas de acesso. A interface e o cache aceitam a mesma faixa, incluindo R$ 1, R$ 50 e centavos.
+No PowerShell, a partir da pasta do projeto:
 
-Aplicada ao projeto atual em 09/10/2026. Teste autenticado real aprovou R$ 1 e R$ 50, recusou R$ 0,99 e reverteu todos os valores de teste por rollback. 18 testes direcionados aprovados.
+```powershell
+flutter pub get
+flutter run -d web-server --web-hostname=localhost --web-port=5000
+```
+
+Abrir `http://localhost:5000` no navegador habitual, fora do modo anônimo. Manter o mesmo perfil, host e porta; o launcher `-d chrome` pode criar um perfil temporário e não é referência confiável para persistência entre execuções. Manter o terminal aberto e usar `q` para encerrar. Se a porta estiver ocupada, encerrar a execução anterior.
+
+## Validação realizada
+
+```powershell
+flutter test --no-pub test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart
+flutter analyze --no-pub lib/features/dashboard test/monthly_limit_service_test.dart test/monthly_limit_sheet_test.dart
+flutter build web --release --no-pub
+```
+
+- **18 testes direcionados aprovados**: restauração, faixa válida, isolamento de contas/visitante, pendência offline, conflitos, respostas atrasadas, confirmação/cancelamento, falha de gravação e valores de R$ 1 e R$ 50. Os testes de serviço usam um remoto simulado.
+- Análise dos arquivos alterados sem problemas; build Web release concluído.
+- Banco real: leitura/gravação do dono, isolamento de outra identidade, recusa a visitante, faixa e timestamp verificados. O teste da correção aprovou R$ 1 e R$ 50 e recusou R$ 0,99. Todos os valores de teste foram revertidos por rollback; nenhuma conta foi criada ou modificada.
+- Navegador: persistência após reload como visitante na prévia e confirmação de R$ 1 disponível no site público. O valor de demonstração em produção foi cancelado.
+- O hash de `main.dart.js` servido pelo domínio público correspondeu ao build local da correção. O asset público de configuração também foi conferido na publicação anterior, sem exibir valores de chaves.
+
+Isso não representa aprovação da suíte inteira: `test/widget_test.dart` é um exemplo antigo e referencia `MyApp`, inexistente.
+
+### Verificação manual pendente
+
+A sincronização autenticada de ponta a ponta em dois navegadores/dispositivos ainda precisa ser validada:
+
+1. Entrar com a mesma conta nos dois dispositivos, definir um teto no primeiro, confirmar e aguardar a sincronização.
+2. Abrir/retomar o dashboard no segundo e conferir o valor; alterar ali, confirmar e conferir o primeiro.
+3. Testar uma alteração offline, fechar/reabrir e restabelecer a conexão para conferir a retomada.
+4. Trocar de conta e conferir isolamento. Conferir também que o teto de visitante não é importado automaticamente.
+
+## Publicação
+
+Referência da produção em 09/10/2026:
+
+| Item | Referência |
+| --- | --- |
+| Site | https://sereno-app-beta.vercel.app/ |
+| Commit do código publicado | `29ab169258eb326c1027346e7f5df27082af0b3a` |
+| Branch do código | `align/published-90ec94a` |
+| Deploy | `BQmNePeGhUmuCKjSogTygm9mrVYr` |
+| URL do deploy | https://sereno-l8rfvfthn-dandev3.vercel.app |
+| Painel do deploy | https://vercel.com/dandev3/sereno-app/BQmNePeGhUmuCKjSogTygm9mrVYr |
+| PR aberto | https://github.com/danielmedeiros22/sereno-app/pull/1 |
+
+A publicação foi feita manualmente com o conteúdo de `build/web` pela CLI da Vercel. A configuração Git atual do projeto não compila Flutter automaticamente. O PR permanece em rascunho e `main` não recebeu essas alterações; configurar corretamente o build automático antes de unir o PR. Commits apenas de documentação não mudam o build já publicado.
+
+Para uma publicação autorizada, gerar o build release, vincular `build/web` ao projeto existente `sereno-app`, escopo `dandev3`, e criar `.vercelignore` excluindo `.vercel/`, `.env.local` e `.gitignore`. A CLI pode gerar `.env.local` com token efêmero: nunca versionar, exibir ou enviar esse arquivo. Garantir a inclusão de `assets/.env`, contendo apenas parâmetros públicos de cliente e a flag de sincronização. Publicar pela CLI e comparar o resultado servido com o build local.
+
+Se o navegador continuar mostrando a versão anterior após a publicação, usar **Ctrl + F5**.
