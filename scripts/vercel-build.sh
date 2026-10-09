@@ -26,3 +26,4 @@ flutter build web --release --no-pub --no-wasm-dry-run
 # Flutter distributes this file publicly. Only client parameters belong here.
 test -f build/web/assets/.env
 grep -q '^MONTHLY_LIMIT_CLOUD_SYNC=true' build/web/assets/.env
+grep -q '^TRANSACTION_CLOUD_SYNC=true' build/web/assets/.env

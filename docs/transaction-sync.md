@@ -13,9 +13,11 @@ Em 09/10/2026, a versão publicada em `main` (`88e5910`) sincroniza somente o te
 - Aviso no dashboard distingue sincronização, sucesso, erro e recurso desativado, com opção de tentar novamente.
 - Registros antigos sem dono **não são enviados automaticamente**. O botão de importação pede confirmação da conta atual, preserva a cópia original e usa os IDs existentes para evitar duplicações. Faça a importação em cada dispositivo com registros antigos, após a ativação.
 
-## Ativação ainda pendente
+## Ativação autorizada em 09/10/2026
 
-Esta entrega está em uma branch de correção, sem mudança na publicação. Para ativar:
+O usuário autorizou aplicar a tabela, validar e publicar. A tabela e a função não existiam e foram criadas em 09/10/2026 no projeto atual. Os testes SQL passaram com rollback: acesso do dono, isolamento de outra identidade, recusa de visitante, rejeição de valor negativo, timestamp do servidor e recusa de exclusão física pelo cliente. A conferência posterior mostrou RLS ativo, três políticas e zero registros persistentes. `TRANSACTION_CLOUD_SYNC=true` foi acrescentado ao `.env`, preservando os demais parâmetros. Prévia e publicação ainda em validação.
+
+Procedimento para futuras instalações:
 
 1. Conferir se `public.account_transactions` já existe no projeto Supabase `rdlofauxvsbdytvvmlzd`; comparar o esquema antes de executar qualquer migração.
 2. Aplicar `supabase/migrations/202610090003_account_transactions.sql` somente se a tabela não existir. A migração adiciona tabela, três políticas de RLS para o próprio usuário e timestamp do servidor; não altera tabelas existentes. Visitantes não têm acesso remoto e exclusões físicas não são permitidas ao cliente.
@@ -33,4 +35,4 @@ flutter test --no-pub test/monthly_limit_service_test.dart test/monthly_limit_sh
 
 Os testes dos lançamentos cobrem persistência offline, isolamento entre contas/visitante, importação confirmada, duplicação, exclusão, leitura em dispositivo limpo, gravações concorrentes e edição durante envio. Testes locais usam armazenamento e acesso remoto simulados; não comprovam por si só a configuração de RLS no banco real nem o funcionamento da versão publicada.
 
-Validação da preparação em 09/10/2026: **28 testes direcionados aprovados**, análise dos arquivos relacionados sem problemas e build Web release concluído. `supabase/tests/account_transactions.sql` prepara a verificação de permissões/isolamento usando uma conta existente, sem alterar a conta e revertendo todos os registros de teste por rollback; esse teste SQL ainda não foi executado no projeto real.
+Validação em 09/10/2026: **28 testes direcionados aprovados**, análise dos arquivos relacionados sem problemas e build Web release concluído. `supabase/tests/account_transactions.sql` passou no banco real usando uma conta existente, sem alterar a conta e revertendo todos os registros de teste por rollback.
