@@ -16,7 +16,7 @@ begin
     raise exception 'FAIL: own row or server timestamp';
   end if;
   begin
-    update public.monthly_spending_limits set amount = 99;
+    update public.monthly_spending_limits set amount = 0.99;
     raise exception 'FAIL: invalid amount accepted';
   exception when check_violation then null;
   end;

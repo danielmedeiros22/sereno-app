@@ -50,7 +50,7 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
   double? get _draft {
     final value =
         double.tryParse(_textController.text.trim().replaceAll(',', '.'));
-    if (value == null || !value.isFinite || value < 100 || value > 50000) {
+    if (value == null || !value.isFinite || value < 1 || value > 50000) {
       return null;
     }
     return (value * 100).round() / 100;
@@ -187,7 +187,7 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
                       onSubmitted: (_) => _confirmLimit())),
             ]),
             if (_draft == null)
-              const Text('Informe um valor entre R\$ 100 e R\$ 50.000.'),
+              const Text('Informe um valor entre R\$ 1 e R\$ 50.000.'),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _saving || _draft == null || _draft == _savedLimit

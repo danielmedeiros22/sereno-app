@@ -36,7 +36,7 @@ class MonthlyLimitService {
       : 'monthly_spending_limit:v2:user:$userId';
 
   static bool isValid(double value) =>
-      value.isFinite && value >= 100 && value <= 50000;
+      value.isFinite && value >= 1 && value <= 50000;
 
   Future<MonthlyLimitRecord> read() async {
     final prefs = await SharedPreferences.getInstance();

@@ -71,4 +71,20 @@ void main() {
         isNotNull);
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final value in [1.0, 50.0]) {
+    testWidgets('confirma teto de R\$ $value', (tester) async {
+      final saved = <double>[];
+      await open(tester, (amount) async => saved.add(amount));
+      await tester.enterText(find.byType(TextField), value.toString());
+      await tester.pump();
+      await tester.tap(find.text('Salvar alteração'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(saved, isEmpty);
+      await tester.tap(find.text('Confirmar'));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(saved, [value]);
+      await tester.pumpWidget(const SizedBox());
+    });
+  }
 }

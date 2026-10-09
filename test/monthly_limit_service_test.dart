@@ -19,8 +19,22 @@ void main() {
     final service = MonthlyLimitService();
     await service.save(5000);
     await expectLater(service.save(double.nan), throwsArgumentError);
-    await expectLater(service.save(99), throwsArgumentError);
+    await expectLater(service.save(0.99), throwsArgumentError);
     expect(await service.load(), 5000);
+  });
+
+  test('valores de unidade e dezena persistem e sincronizam', () async {
+    final guest = MonthlyLimitService();
+    final remote = FakeRemote();
+    final account = MonthlyLimitService(userId: 'a', remote: remote);
+    for (final value in [1.0, 50.0, 99.5]) {
+      await guest.save(value);
+      expect(await MonthlyLimitService().load(), value);
+      await account.save(value);
+      await account.synchronize();
+      expect(remote.values['a'], value);
+      expect((await account.read()).pending, isFalse);
+    }
   });
 
   test('visitante e contas diferentes não compartilham o teto', () async {

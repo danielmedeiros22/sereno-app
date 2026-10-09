@@ -49,3 +49,8 @@ Teste manual final em dois perfis de navegador:
 5. Conferir visitante e login separadamente. Não deve haver importação automática do teto do visitante.
 
 Em 09/10/2026, o usuário autorizou publicar após incluir a caixa de confirmação. A flag de sincronização deve acompanhar o build publicado.
+
+## Correção do valor mínimo
+A migração 202610090002_monthly_limit_minimum_one.sql reduz o mínimo de R$ 100 para R$ 1, mantendo o máximo de R$ 50.000. Não altera valores salvos nem políticas de acesso. A interface e o cache aceitam a mesma faixa, incluindo R$ 1, R$ 50 e centavos.
+
+Aplicada ao projeto atual em 09/10/2026. Teste autenticado real aprovou R$ 1 e R$ 50, recusou R$ 0,99 e reverteu todos os valores de teste por rollback. 18 testes direcionados aprovados.
