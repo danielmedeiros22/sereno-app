@@ -172,7 +172,7 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('TETO MENSAL', style: theme.textTheme.labelSmall),
               SizedBox(
-                  width: 140,
+                  width: 160,
                   child: TextField(
                       controller: _textController,
                       enabled: !_saving,
@@ -180,7 +180,7 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
                           const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.right,
                       style:
-                          theme.textTheme.headlineLarge?.copyWith(color: color),
+                          theme.textTheme.headlineMedium?.copyWith(color: color),
                       decoration: const InputDecoration(
                           prefixText: 'R\$ ', border: InputBorder.none),
                       onChanged: _applyLimit,
