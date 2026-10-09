@@ -4,7 +4,7 @@
 
 Em 09/10/2026, a versão publicada em `main` (`88e5910`) sincroniza somente o teto mensal. O login identifica a conta, mas os lançamentos são gravados exclusivamente na chave `local_transactions` do SharedPreferences. O serviço antigo `SyncService` não está conectado ao fluxo de gravação e sua leitura da nuvem apenas registra contagens, sem atualizar os lançamentos exibidos. Isso explica por que um lançamento feito no celular não aparece na Web, mesmo com a mesma conta Google.
 
-## Correção preparada
+## Funcionamento
 
 - `TransactionSyncService`: cache e fila persistente separados por ID da conta. Visitantes continuam locais. Falha de rede preserva os registros e as alterações pendentes.
 - `SupabaseTransactionRemote`: envia e busca dados da tabela isolada `account_transactions`, com verificação da identidade antes/depois das requisições e leitura paginada.
@@ -15,7 +15,9 @@ Em 09/10/2026, a versão publicada em `main` (`88e5910`) sincroniza somente o te
 
 ## Ativação autorizada em 09/10/2026
 
-O usuário autorizou aplicar a tabela, validar e publicar. A tabela e a função não existiam e foram criadas em 09/10/2026 no projeto atual. Os testes SQL passaram com rollback: acesso do dono, isolamento de outra identidade, recusa de visitante, rejeição de valor negativo, timestamp do servidor e recusa de exclusão física pelo cliente. A conferência posterior mostrou RLS ativo, três políticas e zero registros persistentes. `TRANSACTION_CLOUD_SYNC=true` foi acrescentado ao `.env`, preservando os demais parâmetros. Prévia e publicação ainda em validação.
+O usuário autorizou aplicar a tabela, validar e publicar. A tabela e a função não existiam e foram criadas em 09/10/2026 no projeto atual. Os testes SQL passaram com rollback: acesso do dono, isolamento de outra identidade, recusa de visitante, rejeição de valor negativo, timestamp do servidor e recusa de exclusão física pelo cliente. A conferência posterior mostrou RLS ativo, três políticas e zero registros de teste persistentes. `TRANSACTION_CLOUD_SYNC=true` foi acrescentado ao `.env`, preservando os demais parâmetros.
+
+A prévia `https://sereno-46l5v10gf-dandev3.vercel.app` passou pelos 28 testes, análise e build release e ficou Ready na Vercel. O aplicativo local autenticado enviou um lançamento temporário de R$ 0,01; o recebimento foi conferido no banco real. A publicação segue a integração do PR #3 à `main` pelo fluxo automático da Vercel. O domínio público é `https://sereno-app-beta.vercel.app/`.
 
 Procedimento para futuras instalações:
 

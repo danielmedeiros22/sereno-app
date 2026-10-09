@@ -197,7 +197,7 @@ lib/
 
 ### Referência do login Google do Sereno
 
-> **Sincronização dos lançamentos:** a versão `88e5910` sincroniza o teto mensal, mas ainda salva entradas e saídas somente no dispositivo. A correção em preparação e os passos de ativação estão em [Sincronização dos lançamentos](docs/transaction-sync.md).
+> **Sincronização por conta:** entradas, saídas e teto mensal usam o Supabase. Entre com a mesma conta nos dispositivos e confirme a importação dos lançamentos antigos em cada um deles. Consulte [Sincronização dos lançamentos](docs/transaction-sync.md) para funcionamento, validação e limites do recurso.
 
 > **Conta Google com acesso confirmado: `danyellmedeiros22@gmail.com` (Danyell Medeiros).**
 > O projeto existente é **App financeiro**. Use essa conta e esse projeto para consultar a configuração OAuth do Sereno.
