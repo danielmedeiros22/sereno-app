@@ -77,7 +77,7 @@ A sincronização autenticada de ponta a ponta em dois navegadores/dispositivos 
 
 ## Publicação
 
-Referência da produção em 09/10/2026:
+Referência da publicação manual validada em 09/10/2026, antes da integração automática:
 
 | Item | Referência |
 | --- | --- |
@@ -87,10 +87,22 @@ Referência da produção em 09/10/2026:
 | Deploy | `BQmNePeGhUmuCKjSogTygm9mrVYr` |
 | URL do deploy | https://sereno-l8rfvfthn-dandev3.vercel.app |
 | Painel do deploy | https://vercel.com/dandev3/sereno-app/BQmNePeGhUmuCKjSogTygm9mrVYr |
-| PR aberto | https://github.com/danielmedeiros22/sereno-app/pull/1 |
+| PR de integração | https://github.com/danielmedeiros22/sereno-app/pull/1 |
 
-A publicação foi feita manualmente com o conteúdo de `build/web` pela CLI da Vercel. A configuração Git atual do projeto não compila Flutter automaticamente. O PR permanece em rascunho e `main` não recebeu essas alterações; configurar corretamente o build automático antes de unir o PR. Commits apenas de documentação não mudam o build já publicado.
+### Integração GitHub → Vercel
 
-Para uma publicação autorizada, gerar o build release, vincular `build/web` ao projeto existente `sereno-app`, escopo `dandev3`, e criar `.vercelignore` excluindo `.vercel/`, `.env.local` e `.gitignore`. A CLI pode gerar `.env.local` com token efêmero: nunca versionar, exibir ou enviar esse arquivo. Garantir a inclusão de `assets/.env`, contendo apenas parâmetros públicos de cliente e a flag de sincronização. Publicar pela CLI e comparar o resultado servido com o build local.
+O PR #1 integra o código e a documentação à `main`. A configuração versionada em `vercel.json` define `bash scripts/vercel-build.sh` como comando de build, dispensa instalação Node e publica apenas `build/web`.
+
+O script instala Flutter 3.44.9, confere a revisão `6b182d2c7585eba26d4edce0f97630effd256c33`, resolve dependências com `--enforce-lockfile`, executa os 18 testes direcionados e a análise dos arquivos do teto e compila a aplicação em release. Também exige o asset de configuração e a flag de sincronização. Qualquer falha interrompe a implantação.
+
+- Push/merge na `main`: build de produção; o domínio público passa para a nova versão somente depois de aprovado.
+- Push em outras branches: prévia para revisão, preservando o domínio público.
+- Alterações locais sem commit/push não são publicadas.
+
+A referência corrente deve ser conferida no [painel Vercel](https://vercel.com/dandev3/sereno-app) junto ao commit da [branch main](https://github.com/danielmedeiros22/sereno-app/tree/main). A tabela anterior registra a publicação manual da correção, não os deploys posteriores da integração.
+
+Para uma prévia manual, executar `vercel link --project sereno-app --scope dandev3 --yes` e `vercel deploy --yes --scope dandev3` na raiz do repositório. A compilação ocorre na Vercel. O fluxo principal de produção é o merge na `main`; `--prod` exige autorização. O procedimento antigo de enviar `build/web` pela CLI foi substituído pelo build a partir dos arquivos fonte.
+
+`.vercelignore` exclui tokens locais, metadados da Vercel, SDK temporário, build local, backups e capturas de validação do envio pela CLI. A saída pública é exclusivamente `build/web`. A CLI pode criar `.env.local` com token efêmero: nunca versionar, exibir ou enviar esse arquivo. `assets/.env` é público e deve conter somente parâmetros de cliente e a flag de sincronização.
 
 Se o navegador continuar mostrando a versão anterior após a publicação, usar **Ctrl + F5**.

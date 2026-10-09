@@ -32,7 +32,7 @@ A correção está publicada em [sereno-app-beta.vercel.app](https://sereno-app-
 
 **Validação:** 18 testes direcionados aprovados, análise dos arquivos alterados sem problemas, build Web release concluído e código compilado do site comparado com o build local. O teste real no Supabase aprovou R$ 1 e R$ 50 e recusou R$ 0,99; os valores de teste foram revertidos. A conferência manual da mesma conta em dois dispositivos ainda está pendente.
 
-O código desta publicação está na branch `align/published-90ec94a`, commit `29ab169258eb326c1027346e7f5df27082af0b3a`. O [PR #1](https://github.com/danielmedeiros22/sereno-app/pull/1) permanece em rascunho; `main` ainda não recebeu essas mudanças. Consulte [a documentação técnica do teto mensal](docs/monthly-limit-sync.md) para migrações, sincronização, testes e referência do deploy.
+A branch `main` reúne o código e a documentação integrados pelo [PR #1](https://github.com/danielmedeiros22/sereno-app/pull/1). A Vercel compila, testa e publica automaticamente os commits enviados à `main`; outras branches geram prévias. Consulte [a documentação técnica do teto mensal](docs/monthly-limit-sync.md) para migrações, sincronização, testes e referência do deploy.
 
 ## O que já funciona
 
@@ -223,17 +223,22 @@ Abra `http://localhost:5000` manualmente no navegador habitual e mantenha o term
 
 ### Deploy (Vercel)
 
-O projeto atual recebe o build Flutter compilado pela CLI. A configuração Git da Vercel ainda não compila Flutter automaticamente; configurar esse fluxo antes de unir o PR a `main`.
+A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os 18 testes do teto e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
+
+- **`main`**: cada push/merge inicia um deploy de produção. A nova versão entra no domínio público depois do build aprovado.
+- **Outras branches/PRs**: geram uma URL de prévia para revisão.
+- **Edição local**: não publica por si só. É preciso commit e push ou merge na branch correspondente.
+
+Para solicitar uma prévia manual pela CLI, usar a raiz do repositório, com os arquivos fonte:
 
 ```powershell
-flutter build web --release
-cd build\web
 vercel link --project sereno-app --scope dandev3 --yes
-@('.vercel/', '.env.local', '.gitignore') | Set-Content .vercelignore
-vercel deploy --prod --yes --scope dandev3
+vercel deploy --yes --scope dandev3
 ```
 
-Publicar somente após validar a mudança e ter autorização. Conferir que `assets/.env` está incluído com parâmetros públicos de cliente e `MONTHLY_LIMIT_CLOUD_SYNC=true`. A CLI pode criar `.env.local` com token; esse arquivo e `.vercel/` devem ficar fora do upload e do Git. Nunca inserir service-role ou segredos de servidor nos assets Web. Consulte [o procedimento e a referência da produção](docs/monthly-limit-sync.md#publicação).
+Usar `--prod` somente para uma publicação autorizada. O fluxo principal de produção é o merge na `main`; não executar esses comandos a partir de `build/web` com a configuração nova.
+
+O diretório publicado é somente `build/web`. O asset `assets/.env` contém parâmetros públicos de cliente e `MONTHLY_LIMIT_CLOUD_SYNC=true`. `.env.local`, `.vercel/`, backups e arquivos locais estão excluídos do upload por `.vercelignore`. Nunca inserir service-role ou segredos de servidor nos assets Web. Consulte [a documentação de publicação](docs/monthly-limit-sync.md#publicação).
 
 ## Termômetro Sereno
 

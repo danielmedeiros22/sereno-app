@@ -32,6 +32,10 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+.flutter-sdk/
+.vercel/
+.env.local
+.env.*.local
 
 # Symbolication related
 app.*.symbols

@@ -1,0 +1,11 @@
+.git/
+.vercel/
+.flutter-sdk/
+.dart_tool/
+build/
+_backup_prototipo_20261008/
+sereno-app-github/
+AGENTS.md
+.env.local
+.env.*.local
+docs/*.jpg
