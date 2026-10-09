@@ -6,15 +6,16 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../../core/services/sync/sync_indicator.dart';
-import '../../../../core/services/notifications/notification_banner.dart';
-import '../../../../core/services/notifications/notification_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../transactions/data/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/presentation/screens/transaction_form_screen.dart';
 import '../../../transactions/presentation/widgets/transaction_tile.dart';
 import '../widgets/guest_banner.dart';
+import '../widgets/monthly_limit_sheet.dart';
 import '../widgets/termometro_orb.dart';
+import '../../data/monthly_limit_service.dart';
+import '../providers/monthly_limit_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -23,22 +24,29 @@ class DashboardScreen extends ConsumerStatefulWidget {
   ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  double _limit = 3500;
-
+class _DashboardScreenState extends ConsumerState<DashboardScreen>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    _checkNotifications();
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  void _checkNotifications() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final service = ref.read(notificationServiceProvider);
-      service.initialize();
-      service.checkRecurringBills();
-    });
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(monthlyLimitProvider.notifier).synchronize();
+    }
+  }
+
+  Future<void> _saveLimit(double limit) =>
+      ref.read(monthlyLimitProvider.notifier).save(limit);
 
   void _openForm() async {
     await Navigator.of(context).push<bool>(
@@ -53,12 +61,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final isGuest = ref.watch(isGuestProvider);
     final txList = ref.watch(transactionListProvider);
     final totals = ref.watch(monthTotalsProvider);
+    final limitState = ref.watch(monthlyLimitProvider);
+    final limit = limitState.valueOrNull?.record.value ??
+        MonthlyLimitService.defaultLimit;
 
-    final displayName = isGuest ? 'Visitante' : user?.userMetadata?['full_name']?.split(' ').first ?? 'você';
+    final displayName = isGuest
+        ? 'Visitante'
+        : user?.userMetadata?['full_name']?.split(' ').first ?? 'você';
     final income = totals.value?['income'] ?? 0;
     final expense = totals.value?['expense'] ?? 0;
     final balance = income - expense;
-    final percent = _limit > 0 ? (expense / _limit) * 100 : 0.0;
+    final percent = limit > 0 ? (expense / limit) * 100 : 0.0;
 
     return Scaffold(
       body: SafeArea(
@@ -68,7 +81,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               floating: true,
               backgroundColor: theme.scaffoldBackgroundColor,
               actions: [
-                IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () => context.push('/settings')),
+                IconButton(
+                    icon: const Icon(Icons.settings_outlined),
+                    onPressed: () => context.push('/settings')),
               ],
             ),
             SliverPadding(
@@ -76,15 +91,20 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 8),
-                  if (isGuest) ...[const GuestBanner(), const SizedBox(height: 16)],
+                  if (isGuest) ...[
+                    const GuestBanner(),
+                    const SizedBox(height: 16)
+                  ],
                   if (!isGuest) ...[
                     const SyncIndicator(),
                     const SizedBox(height: 8),
                   ],
-                  const NotificationBanner(),
                   _buildSpaceSwitcher(theme),
                   const SizedBox(height: 24),
-                  Text('Olá, $displayName 👋', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                  Text('Olá, $displayName 👋',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6))),
                   const SizedBox(height: 8),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,9 +113,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('SALDO ATUAL', style: theme.textTheme.labelSmall),
+                            Text('SALDO ATUAL',
+                                style: theme.textTheme.labelSmall),
                             const SizedBox(height: 4),
-                            Text(NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(balance), style: theme.textTheme.displaySmall?.copyWith(color: balance >= 0 ? null : AppColors.expense)),
+                            Text(
+                                NumberFormat.currency(
+                                        locale: 'pt_BR', symbol: 'R\$')
+                                    .format(balance),
+                                style: theme.textTheme.displaySmall?.copyWith(
+                                    color: balance >= 0
+                                        ? null
+                                        : AppColors.expense)),
                           ],
                         ),
                       ),
@@ -103,9 +131,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         onTap: () => _openLimitsSheet(expense),
                         child: Column(
                           children: [
-                            TermometroOrb(percent: percent, size: 72, showFace: true),
+                            TermometroOrb(
+                                percent: percent, size: 72, showFace: true),
                             const SizedBox(height: 4),
-                            Text('${percent.toStringAsFixed(0)}%', style: theme.textTheme.labelSmall?.copyWith(color: AppColors.riskFor(percent))),
+                            Text('${percent.toStringAsFixed(0)}%',
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                    color: AppColors.riskFor(percent))),
                           ],
                         ),
                       ),
@@ -114,31 +145,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(child: _buildFlowCard(theme, 'Entradas', income, AppColors.income, true)),
+                      Expanded(
+                          child: _buildFlowCard(theme, 'Entradas', income,
+                              AppColors.income, true)),
                       const SizedBox(width: 12),
-                      Expanded(child: _buildFlowCard(theme, 'Saídas', expense, AppColors.expense, false)),
+                      Expanded(
+                          child: _buildFlowCard(theme, 'Saídas', expense,
+                              AppColors.expense, false)),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text('Últimas movimentações', style: theme.textTheme.titleMedium),
+                  Text('Últimas movimentações',
+                      style: theme.textTheme.titleMedium),
                   const SizedBox(height: 12),
                 ]),
               ),
             ),
             txList.when(
-              loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-              error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('Erro: $e'))),
+              loading: () => const SliverToBoxAdapter(
+                  child: Center(child: CircularProgressIndicator())),
+              error: (e, _) =>
+                  SliverToBoxAdapter(child: Center(child: Text('Erro: $e'))),
               data: (transactions) {
                 if (transactions.isEmpty) {
                   return SliverToBoxAdapter(
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: theme.colorScheme.outline)),
+                      decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: theme.colorScheme.outline)),
                       child: Column(children: [
-                        Icon(Icons.receipt_long_outlined, size: 48, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+                        Icon(Icons.receipt_long_outlined,
+                            size: 48,
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.2)),
                         const SizedBox(height: 12),
-                        Text('Nenhuma movimentação ainda', style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                        Text('Nenhuma movimentação ainda',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.5))),
                       ]),
                     ),
                   );
@@ -159,11 +206,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Padding(padding: const EdgeInsets.only(top: 8, bottom: 4), child: Text(entry.key, style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.4)))),
-                            ...entry.value.map((tx) => TransactionTile(transaction: tx, onDismissed: () {
-                              ref.read(transactionListProvider.notifier).remove(tx.id);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${tx.category} removida')));
-                            })),
+                            Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 8, bottom: 4),
+                                child: Text(entry.key,
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                        color: theme.colorScheme.onSurface
+                                            .withValues(alpha: 0.4)))),
+                            ...entry.value.map((tx) => TransactionTile(
+                                transaction: tx,
+                                onDismissed: () {
+                                  ref
+                                      .read(transactionListProvider.notifier)
+                                      .remove(tx.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text('${tx.category} removida')));
+                                })),
                           ],
                         );
                       },
@@ -189,28 +249,59 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget _buildSpaceSwitcher(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: theme.colorScheme.outline)),
+      decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: theme.colorScheme.outline)),
       child: Row(
         children: [
-          Container(width: 36, height: 36, decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.primary, AppColors.accent]), borderRadius: BorderRadius.circular(10)), child: const Center(child: Text('👤', style: TextStyle(fontSize: 18)))),
+          Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                      colors: [AppColors.primary, AppColors.accent]),
+                  borderRadius: BorderRadius.circular(10)),
+              child: const Center(
+                  child: Text('👤', style: TextStyle(fontSize: 18)))),
           const SizedBox(width: 12),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Pessoal', style: theme.textTheme.titleSmall?.copyWith(fontSize: 14)), Text('Seu espaço padrão', style: theme.textTheme.bodySmall)])),
-          Icon(Icons.expand_more, color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+          Expanded(
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                Text('Pessoal',
+                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
+                Text('Seu espaço padrão', style: theme.textTheme.bodySmall)
+              ])),
+          Icon(Icons.expand_more,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
         ],
       ),
     );
   }
 
-  Widget _buildFlowCard(ThemeData theme, String label, double value, Color color, bool isIncome) {
+  Widget _buildFlowCard(
+      ThemeData theme, String label, double value, Color color, bool isIncome) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: theme.colorScheme.surface, borderRadius: BorderRadius.circular(14), border: Border.all(color: theme.colorScheme.outline)),
+      decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: theme.colorScheme.outline)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)), child: Icon(isIncome ? Icons.arrow_upward : Icons.arrow_downward, color: color, size: 16)),
+        Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8)),
+            child: Icon(isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                color: color, size: 16)),
         const SizedBox(height: 10),
         Text(label.toUpperCase(), style: theme.textTheme.labelSmall),
         const SizedBox(height: 4),
-        Text(NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(value), style: theme.textTheme.titleLarge?.copyWith(color: color)),
+        Text(
+            NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(value),
+            style: theme.textTheme.titleLarge?.copyWith(color: color)),
       ]),
     );
   }
@@ -218,70 +309,32 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String _dateLabel(DateTime date) {
     final now = DateTime.now();
     if (DateUtils.isSameDay(date, now)) return 'Hoje';
-    if (DateUtils.isSameDay(date, now.subtract(const Duration(days: 1)))) return 'Ontem';
+    if (DateUtils.isSameDay(date, now.subtract(const Duration(days: 1)))) {
+      return 'Ontem';
+    }
     return DateFormat("d 'de' MMMM", 'pt_BR').format(date);
   }
 
-  void _openLimitsSheet(double spent) {
-    showModalBottomSheet(context: context, isScrollControlled: true, backgroundColor: Colors.transparent, builder: (_) => _LimitsSheet(currentLimit: _limit, currentSpent: spent, onChanged: (newLimit) => setState(() => _limit = newLimit)));
-  }
-}
-
-class _LimitsSheet extends StatefulWidget {
-  const _LimitsSheet({required this.currentLimit, required this.currentSpent, required this.onChanged});
-  final double currentLimit;
-  final double currentSpent;
-  final ValueChanged<double> onChanged;
-
-  @override
-  State<_LimitsSheet> createState() => _LimitsSheetState();
-}
-
-class _LimitsSheetState extends State<_LimitsSheet> {
-  late double _limit;
-  late TextEditingController _textController;
-
-  @override
-  void initState() {
-    super.initState();
-    _limit = widget.currentLimit;
-    _textController = TextEditingController(text: _limit.toStringAsFixed(0));
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  double get _percent => _limit > 0 ? (widget.currentSpent / _limit) * 100 : 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = AppColors.riskFor(_percent);
-    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
-
-    return Container(
-      padding: EdgeInsets.only(left: 24, right: 24, top: 12, bottom: MediaQuery.of(context).viewInsets.bottom + 24),
-      decoration: BoxDecoration(color: theme.scaffoldBackgroundColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(28))),
-      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: theme.colorScheme.outline, borderRadius: BorderRadius.circular(2)))),
-        Text('Meus limites', style: theme.textTheme.headlineLarge),
-        const SizedBox(height: 24),
-        Center(child: TermometroOrb(percent: _percent, size: 140)),
-        const SizedBox(height: 16),
-        Center(child: Text(AppColors.moodFor(_percent), style: theme.textTheme.headlineMedium?.copyWith(color: color))),
-        const SizedBox(height: 20),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-          Text('TETO MENSAL', style: theme.textTheme.labelSmall),
-          SizedBox(width: 140, child: TextField(controller: _textController, keyboardType: TextInputType.number, textAlign: TextAlign.right, style: theme.textTheme.headlineLarge?.copyWith(color: color), decoration: const InputDecoration(prefixText: 'R\$ ', border: InputBorder.none), onSubmitted: (v) { final p = double.tryParse(v); if (p != null) { setState(() { _limit = p.clamp(100, 50000); }); widget.onChanged(_limit); } })),
-        ]),
-        const SizedBox(height: 20),
-        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Gasto atual', style: theme.textTheme.bodySmall), Text(currency.format(widget.currentSpent), style: theme.textTheme.titleMedium)]),
-        const SizedBox(height: 8),
-        ClipRRect(borderRadius: BorderRadius.circular(4), child: LinearProgressIndicator(value: (_percent / 100).clamp(0, 1).toDouble(), minHeight: 8, backgroundColor: theme.colorScheme.outline, valueColor: AlwaysStoppedAnimation(color))),
-      ]),
-    );
+  void _openLimitsSheet(double spent) async {
+    final controller = ref.read(monthlyLimitProvider.notifier);
+    final owner = ref.read(monthlyLimitOwnerProvider);
+    await controller.ready;
+    if (!mounted) return;
+    if (owner != ref.read(monthlyLimitOwnerProvider)) return;
+    final record = ref.read(monthlyLimitProvider).valueOrNull?.record;
+    if (record == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Não foi possível carregar o teto mensal.')));
+      return;
+    }
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => MonthlyLimitSheet(
+            currentLimit: record.value,
+            currentSpent: spent,
+            owner: owner,
+            onChanged: _saveLimit));
   }
 }

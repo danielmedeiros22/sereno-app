@@ -21,6 +21,19 @@ Controle financeiro pessoal e compartilhado — Web, Android e iOS em uma base F
 
 Sereno é um app de controle financeiro que organiza suas finanças em **Espaços** — Pessoal, Casa, Empresa, Viagem — com sincronização offline, orçamento por categoria e um indicador visual exclusivo chamado **Termômetro Sereno** que mostra em tempo real como seus gastos estão em relação ao teto que você definiu.
 
+## Teto mensal — atualização de 09/10/2026
+
+- Aceita valores de **R$ 1 até R$ 50.000**, incluindo R$ 50 e centavos. O mínimo anterior de R$ 100 foi corrigido no aplicativo e no banco.
+- Para alterar: abra **Meus limites**, digite o valor, selecione **Salvar alteração** e confirme. A caixa mostra o teto atual e o novo; digitar ou cancelar não salva.
+- O valor confirmado permanece após fechar e reabrir o navegador. Visitantes salvam neste navegador; contas autenticadas sincronizam com o Supabase e mantêm alterações pendentes quando estão offline.
+- R$ 3.500 é apenas o padrão quando não existe teto salvo; não sobrescreve o valor escolhido nem é enviado automaticamente à nuvem.
+
+A correção está publicada em [sereno-app-beta.vercel.app](https://sereno-app-beta.vercel.app/). Se a versão anterior continuar aparecendo, recarregue com **Ctrl + F5**.
+
+**Validação:** 18 testes direcionados aprovados, análise dos arquivos alterados sem problemas, build Web release concluído e código compilado do site comparado com o build local. O teste real no Supabase aprovou R$ 1 e R$ 50 e recusou R$ 0,99; os valores de teste foram revertidos. A conferência manual da mesma conta em dois dispositivos ainda está pendente.
+
+A branch `main` reúne o código e a documentação integrados pelo [PR #1](https://github.com/danielmedeiros22/sereno-app/pull/1). A Vercel compila, testa e publica automaticamente os commits enviados à `main`; outras branches geram prévias. Consulte [a documentação técnica do teto mensal](docs/monthly-limit-sync.md) para migrações, sincronização, testes e referência do deploy.
+
 ## O que já funciona
 
 ## O que já funciona
@@ -47,21 +60,16 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 - **Sync offline** — fila de sincronização automática com Supabase ao voltar online
 - **Indicador de sync** — mostra status no dashboard (sincronizando, pendente, erro, sincronizado)
 - **Detecção automática de rede** — connectivity_plus monitora e sincroniza quando volta online
-- **Notificações internas** — banners no dashboard avisam contas atrasadas ou próximas do vencimento
-- **Notificações push do navegador** — alerta real do browser para contas pendentes (pede permissão ao abrir)
-- **Seletor de tema** — escolha entre claro, escuro ou seguir o sistema, com persistência
 
 ## Roadmap
 
 | Versão | Status | Features |
 |--------|--------|----------|
 | **V1** | 🚧 Em desenvolvimento | Cartão de crédito, parcelamento, sync offline |
-| **V1** | ✅ Completo | Login, modo visitante, transações, GPS, mapa, categorias, orçamento, contas recorrentes, diário financeiro, sync offline |
-| **V1** | ✅ Completo | Login, modo visitante, transações, GPS, mapa, categorias, orçamento, contas recorrentes, diário financeiro, sync offline, notificações, seletor de tema |
 | **V2** | 📋 Planejado | Compartilhamento de espaços, mapa de gastos, comprovantes/anexos |
 | **V3** | 📋 Planejado | OCR de notas, busca avançada, IA financeira |
 | **V4** | 📋 Planejado | QR Code, Pix, Open Finance |
-
+| **V1** | ✅ Completo | Login, modo visitante, transações, GPS, mapa, categorias, orçamento, contas recorrentes, diário financeiro, sync offline |
 
 O V1 do Sereno está completo com tudo funcionando na web:
 
@@ -206,18 +214,31 @@ flutter pub get
 
 ### 3. Rode
 
-```bash
-flutter run -d chrome --web-port=5000
+```powershell
+flutter pub get
+flutter run -d web-server --web-hostname=localhost --web-port=5000
 ```
+
+Abra `http://localhost:5000` manualmente no navegador habitual e mantenha o terminal aberto. Para testar persistência, use o mesmo perfil, host e porta, sem modo anônimo. O launcher `-d chrome` pode usar um perfil temporário. Para encerrar, pressione `q` no terminal. Se a porta 5000 estiver ocupada, encerre a execução anterior antes de iniciar novamente. O OAuth local precisa permitir `http://localhost:5000` nos redirects do Supabase.
 
 ### Deploy (Vercel)
 
-```bash
-flutter build web
-Copy-Item .env build\web\assets\.env -Force
-cd build\web
-vercel --prod
+A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os 18 testes do teto e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
+
+- **`main`**: cada push/merge inicia um deploy de produção. A nova versão entra no domínio público depois do build aprovado.
+- **Outras branches/PRs**: geram uma URL de prévia para revisão.
+- **Edição local**: não publica por si só. É preciso commit e push ou merge na branch correspondente.
+
+Para solicitar uma prévia manual pela CLI, usar a raiz do repositório, com os arquivos fonte:
+
+```powershell
+vercel link --project sereno-app --scope dandev3 --yes
+vercel deploy --yes --scope dandev3
 ```
+
+Usar `--prod` somente para uma publicação autorizada. O fluxo principal de produção é o merge na `main`; não executar esses comandos a partir de `build/web` com a configuração nova.
+
+O diretório publicado é somente `build/web`. O asset `assets/.env` contém parâmetros públicos de cliente e `MONTHLY_LIMIT_CLOUD_SYNC=true`. `.env.local`, `.vercel/`, backups e arquivos locais estão excluídos do upload por `.vercelignore`. Nunca inserir service-role ou segredos de servidor nos assets Web. Consulte [a documentação de publicação](docs/monthly-limit-sync.md#publicação).
 
 ## Termômetro Sereno
 
