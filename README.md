@@ -197,6 +197,8 @@ lib/
 
 ### Referência do login Google do Sereno
 
+> **Sincronização dos lançamentos:** a versão `88e5910` sincroniza o teto mensal, mas ainda salva entradas e saídas somente no dispositivo. A correção em preparação e os passos de ativação estão em [Sincronização dos lançamentos](docs/transaction-sync.md).
+
 > **Conta Google com acesso confirmado: `danyellmedeiros22@gmail.com` (Danyell Medeiros).**
 > O projeto existente é **App financeiro**. Use essa conta e esse projeto para consultar a configuração OAuth do Sereno.
 
@@ -243,7 +245,7 @@ Abra `http://localhost:5000` manualmente no navegador habitual e mantenha o term
 
 ### Deploy (Vercel)
 
-A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os 18 testes do teto e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
+A integração GitHub → Vercel é definida em [`vercel.json`](vercel.json) e [`scripts/vercel-build.sh`](scripts/vercel-build.sh). O script usa Flutter **3.44.9**, revisão fixa, respeita `pubspec.lock`, executa os testes direcionados do teto e dos lançamentos e a análise dos arquivos relacionados e gera `build/web` em release. Se uma etapa falhar, a publicação não avança.
 
 - **`main`**: cada push/merge inicia um deploy de produção. A nova versão entra no domínio público depois do build aprovado.
 - **Outras branches/PRs**: geram uma URL de prévia para revisão.

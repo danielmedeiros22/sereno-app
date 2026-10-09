@@ -11,6 +11,7 @@ import '../../../transactions/data/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/presentation/screens/transaction_form_screen.dart';
 import '../../../transactions/presentation/widgets/transaction_tile.dart';
+import '../../../transactions/presentation/widgets/transaction_sync_banner.dart';
 import '../widgets/guest_banner.dart';
 import '../widgets/monthly_limit_sheet.dart';
 import '../widgets/termometro_orb.dart';
@@ -42,6 +43,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(monthlyLimitProvider.notifier).synchronize();
+      ref.read(transactionListProvider.notifier).synchronize();
     }
   }
 
@@ -91,6 +93,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 8),
+                  const TransactionSyncBanner(),
                   if (isGuest) ...[
                     const GuestBanner(),
                     const SizedBox(height: 16)
