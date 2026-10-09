@@ -27,6 +27,8 @@ class DashboardScreen extends ConsumerStatefulWidget {
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen>
     with WidgetsBindingObserver {
+  bool _refreshing = false;
+
   @override
   void initState() {
     super.initState();
@@ -49,6 +51,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
   Future<void> _saveLimit(double limit) =>
       ref.read(monthlyLimitProvider.notifier).save(limit);
+
+  Future<void> _refresh() async {
+    if (_refreshing) return;
+    setState(() => _refreshing = true);
+    final owner = ref.read(transactionOwnerProvider);
+    try {
+      final transactions = ref.read(transactionListProvider.notifier);
+      final monthlyLimit = ref.read(monthlyLimitProvider.notifier);
+      await Future.wait([transactions.load(), monthlyLimit.ready]);
+      await Future.wait([
+        transactions.synchronize(),
+        monthlyLimit.synchronize(),
+      ]);
+      if (!mounted || owner != ref.read(transactionOwnerProvider)) return;
+      final transactionStatus = ref.read(transactionSyncStatusProvider);
+      final limitState = ref.read(monthlyLimitProvider);
+      final failed = transactionStatus == TransactionSyncStatus.failed ||
+          ref.read(transactionListProvider).hasError ||
+          limitState.hasError ||
+          limitState.valueOrNull?.syncFailed == true;
+      final syncing = transactionStatus == TransactionSyncStatus.syncing ||
+          limitState.valueOrNull?.syncing == true;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(failed
+            ? 'Não foi possível atualizar tudo agora. Seus dados foram preservados.'
+            : syncing
+                ? 'A sincronização continua em andamento.'
+                : owner == null
+                    ? 'Informações locais atualizadas.'
+                    : 'Informações atualizadas.'),
+      ));
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Não foi possível atualizar agora. Tente novamente.'),
+        ));
+      }
+    } finally {
+      if (mounted) setState(() => _refreshing = false);
+    }
+  }
 
   void _openForm() async {
     await Navigator.of(context).push<bool>(
@@ -83,7 +126,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               floating: true,
               backgroundColor: theme.scaffoldBackgroundColor,
               actions: [
+                TextButton.icon(
+                  onPressed: _refreshing ? null : _refresh,
+                  icon: _refreshing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.refresh),
+                  label: Text(_refreshing ? 'Atualizando…' : 'Atualizar'),
+                ),
                 IconButton(
+                    tooltip: 'Configurações',
                     icon: const Icon(Icons.settings_outlined),
                     onPressed: () => context.push('/settings')),
               ],

@@ -9,6 +9,7 @@ Em 09/10/2026, a versão publicada em `main` (`88e5910`) sincroniza somente o te
 - `TransactionSyncService`: cache e fila persistente separados por ID da conta. Visitantes continuam locais. Falha de rede preserva os registros e as alterações pendentes.
 - `SupabaseTransactionRemote`: envia e busca dados da tabela isolada `account_transactions`, com verificação da identidade antes/depois das requisições e leitura paginada.
 - Sincronização ao carregar, criar/editar/excluir, recuperar conexão, retomar o aplicativo e a cada 30 segundos com o app aberto. Saldo e movimentações usam os dados recuperados.
+- Na tela inicial, **Atualizar** busca os lançamentos e o teto mensal da conta. O botão mostra o andamento e o aplicativo avisa quando a atualização termina ou falha. No modo visitante, atualiza apenas as informações locais.
 - Exclusões usam uma marca persistente na nuvem para se propagarem sem reaparecerem em outro dispositivo. Conflitos no mesmo lançamento seguem a última gravação aceita pelo servidor.
 - Aviso no dashboard distingue sincronização, sucesso, erro e recurso desativado, com opção de tentar novamente.
 - Registros antigos sem dono **não são enviados automaticamente**. O botão de importação pede confirmação da conta atual, preserva a cópia original e usa os IDs existentes para evitar duplicações. Faça a importação em cada dispositivo com registros antigos, após a ativação.
