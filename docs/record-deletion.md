@@ -4,6 +4,8 @@ Em **Ajustes → Limpar registros**, escolha entradas, saídas, diário financei
 
 Escolha **Dia**, **Mês**, **Ano** ou **Todo o histórico**. A data de referência considera o dia completo, o mês completo ou o ano completo, conforme o filtro. Lançamentos usam sua data financeira; diário usa a data da anotação; recorrências usam a data de criação da regra. Excluir uma regra recorrente remove também sua programação futura, não apenas uma ocorrência.
 
+Os calendários do aplicativo usam português brasileiro (pt-BR), incluindo meses, dias da semana, botões e campos de data, mesmo quando o navegador está em outro idioma.
+
 **Revisar exclusão** carrega os dados e mostra as quantidades por categoria e o período. A exclusão só é liberada após marcar **Autorizo a exclusão dos registros acima** e digitar exatamente **EXCLUIR**. Cancelar não apaga nada. Não existe desfazer no aplicativo.
 
 ## Alcance e sincronização
