@@ -108,6 +108,14 @@ class TransactionListNotifier
     await add(tx);
   }
 
+  Future<int> deleteReviewed(List<TransactionModel> reviewed) async {
+    ++_edits;
+    final count = await _service.deleteReviewed(reviewed);
+    await load();
+    await synchronize();
+    return count;
+  }
+
   Future<void> importLegacy() async {
     // Fetch cloud IDs first so import cannot replace an existing cloud record.
     if (_service.remote != null) await _service.synchronize();

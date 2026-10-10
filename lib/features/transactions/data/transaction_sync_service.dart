@@ -76,6 +76,35 @@ class TransactionSyncService {
   Future<void> save(TransactionModel tx) => _change(tx.id, tx.toJson());
   Future<void> delete(String id) => _change(id, null);
 
+  /// Delete only the reviewed snapshot; preserve additions and later edits.
+  /// One durable write prevents a partial local batch on storage failure.
+  Future<int> deleteReviewed(List<TransactionModel> reviewed) =>
+      _locked(() async {
+        final expected = {
+          for (final tx in reviewed) tx.id: jsonEncode(tx.toJson())
+        };
+        final entries = await _readEntries();
+        var count = 0;
+        for (final entry in entries) {
+          if (entry['is_deleted'] == true ||
+              !expected.containsKey(entry['id'])) {
+            continue;
+          }
+          final current = TransactionModel.fromJson(
+              Map<String, dynamic>.from(entry['payload'] as Map));
+          if (jsonEncode(current.toJson()) != expected[current.id]) continue;
+          entry.addAll({
+            'payload': null,
+            'is_deleted': true,
+            'pending': userId != null,
+            'revision': const Uuid().v4(),
+          });
+          count++;
+        }
+        if (count > 0) await _store(entries);
+        return count;
+      });
+
   Future<void> _change(String id, Map<String, dynamic>? payload) =>
       _locked(() async {
         final entries = await _readEntries();

@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/theme_provider.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import 'clear_records_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -39,14 +40,16 @@ class SettingsScreen extends ConsumerWidget {
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                border:
+                    Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
               ),
               child: Column(
                 children: [
                   const CircleAvatar(
                     radius: 28,
                     backgroundColor: AppColors.primary,
-                    child: Icon(Icons.person_outline, color: Colors.white, size: 28),
+                    child: Icon(Icons.person_outline,
+                        color: Colors.white, size: 28),
                   ),
                   const SizedBox(height: 12),
                   Text('Modo visitante', style: theme.textTheme.titleMedium),
@@ -99,7 +102,8 @@ class SettingsScreen extends ConsumerWidget {
                           user.userMetadata?['full_name'] ?? 'Sem nome',
                           style: theme.textTheme.titleMedium,
                         ),
-                        Text(user.email ?? '', style: theme.textTheme.bodySmall),
+                        Text(user.email ?? '',
+                            style: theme.textTheme.bodySmall),
                       ],
                     ),
                   ),
@@ -108,7 +112,6 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 24),
-
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: const Text('Tema'),
@@ -146,11 +149,19 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () {},
             ),
           const Divider(height: 40),
-
+          ListTile(
+            leading: const Icon(Icons.delete_sweep_outlined, color: Colors.red),
+            title: const Text('Limpar registros',
+                style: TextStyle(color: Colors.red)),
+            subtitle: const Text('Escolher dados e período para excluir'),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
+                builder: (_) => const ClearRecordsScreen())),
+          ),
           if (isGuest)
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sair do modo visitante', style: TextStyle(color: Colors.red)),
+              title: const Text('Sair do modo visitante',
+                  style: TextStyle(color: Colors.red)),
               subtitle: const Text('Seus dados locais serão mantidos'),
               onTap: () async {
                 final guestService = ref.read(guestServiceProvider);
@@ -201,9 +212,12 @@ class SettingsScreen extends ConsumerWidget {
           children: [
             Text('Escolha o tema', style: theme.textTheme.titleLarge),
             const SizedBox(height: 20),
-            _themeOption(context, ref, ThemeMode.system, 'Segue o sistema', Icons.brightness_auto, current),
-            _themeOption(context, ref, ThemeMode.light, 'Claro', Icons.light_mode, current),
-            _themeOption(context, ref, ThemeMode.dark, 'Escuro', Icons.dark_mode, current),
+            _themeOption(context, ref, ThemeMode.system, 'Segue o sistema',
+                Icons.brightness_auto, current),
+            _themeOption(context, ref, ThemeMode.light, 'Claro',
+                Icons.light_mode, current),
+            _themeOption(context, ref, ThemeMode.dark, 'Escuro',
+                Icons.dark_mode, current),
             const SizedBox(height: 12),
           ],
         ),
@@ -211,13 +225,15 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _themeOption(BuildContext context, WidgetRef ref, ThemeMode mode, String label, IconData icon, ThemeMode current) {
+  Widget _themeOption(BuildContext context, WidgetRef ref, ThemeMode mode,
+      String label, IconData icon, ThemeMode current) {
     final active = current == mode;
 
     return ListTile(
       leading: Icon(icon, color: active ? AppColors.primary : null),
       title: Text(label),
-      trailing: active ? const Icon(Icons.check, color: AppColors.primary) : null,
+      trailing:
+          active ? const Icon(Icons.check, color: AppColors.primary) : null,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       selected: active,
       selectedTileColor: AppColors.primary.withValues(alpha: 0.1),

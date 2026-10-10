@@ -163,4 +163,45 @@ void main() {
     expect(await account.getAll(), hasLength(20));
     expect(await account.pendingCount(), 20);
   });
+
+  test('reviewed batch preserves later edits, new records and other accounts',
+      () async {
+    final remote = MemoryRemote();
+    final account = TransactionSyncService(userId: 'a', remote: remote);
+    final other = TransactionSyncService(userId: 'b', remote: remote);
+    final first = tx();
+    final edited = tx();
+    await account.save(first);
+    await account.save(edited);
+    await account.synchronize();
+    await other.save(first);
+    final reviewed = await account.getAll();
+    await account.save(tx(id: edited.id, amount: 99));
+    final added = tx();
+    await account.save(added);
+    expect(await account.deleteReviewed(reviewed), 1);
+    expect((await account.getAll()).map((row) => row.id),
+        containsAll([edited.id, added.id]));
+    expect(await other.getAll(), hasLength(1));
+    await account.synchronize();
+    expect(remote.rows['a']![first.id]!['is_deleted'], true);
+    expect(remote.rows['a']![first.id]!['payload'], isNull);
+    SharedPreferences.setMockInitialValues({});
+    final clean = TransactionSyncService(userId: 'a', remote: remote);
+    await clean.synchronize();
+    expect(
+        (await clean.getAll()).map((row) => row.id), isNot(contains(first.id)));
+  });
+
+  test('guest batch removes only reviewed records and survives restart',
+      () async {
+    final service = TransactionSyncService();
+    final first = tx();
+    await service.save(first);
+    final kept = tx();
+    await service.save(kept);
+    expect(await service.deleteReviewed([first]), 1);
+    expect((await TransactionSyncService().getAll()).single.id, kept.id);
+    expect(await service.deleteReviewed([first]), 0);
+  });
 }
