@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../providers/monthly_limit_provider.dart';
 import 'termometro_orb.dart';
+import 'segmented_limit_progress.dart';
 
 class MonthlyLimitSheet extends ConsumerStatefulWidget {
   const MonthlyLimitSheet(
@@ -11,10 +12,12 @@ class MonthlyLimitSheet extends ConsumerStatefulWidget {
       required this.currentLimit,
       required this.currentSpent,
       required this.owner,
+      this.periodLabel,
       required this.onChanged});
   final double currentLimit;
   final double currentSpent;
   final String? owner;
+  final String? periodLabel;
   final Future<void> Function(double) onChanged;
 
   @override
@@ -161,6 +164,11 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
             const SizedBox(height: 8),
             _LimitSyncStatus(
                 state: limitState.valueOrNull, isGuest: widget.owner == null),
+            if (widget.periodLabel != null) ...[
+              const SizedBox(height: 8),
+              Text('Referência: ${widget.periodLabel}',
+                  style: theme.textTheme.bodySmall),
+            ],
             const SizedBox(height: 24),
             Center(child: TermometroOrb(percent: _percent, size: 140)),
             const SizedBox(height: 16),
@@ -179,8 +187,8 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
                       keyboardType:
                           const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.right,
-                      style:
-                          theme.textTheme.headlineMedium?.copyWith(color: color),
+                      style: theme.textTheme.headlineMedium
+                          ?.copyWith(color: color),
                       decoration: const InputDecoration(
                           prefixText: 'R\$ ', border: InputBorder.none),
                       onChanged: _applyLimit,
@@ -202,13 +210,7 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
                   style: theme.textTheme.titleMedium)
             ]),
             const SizedBox(height: 8),
-            ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                    value: (_percent / 100).clamp(0, 1).toDouble(),
-                    minHeight: 8,
-                    backgroundColor: theme.colorScheme.outline,
-                    valueColor: AlwaysStoppedAnimation(color))),
+            SegmentedLimitProgress(percent: _percent),
           ])),
     );
   }

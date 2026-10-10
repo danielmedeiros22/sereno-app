@@ -150,10 +150,25 @@ class TransactionListNotifier
   }
 }
 
-final monthTotalsProvider = FutureProvider<Map<String, double>>((ref) async {
+final selectedMonthProvider = StateProvider<DateTime>((ref) {
+  ref.watch(transactionOwnerProvider);
+  final now = DateTime.now();
+  return DateTime(now.year, now.month);
+});
+
+final selectedMonthTransactionsProvider =
+    Provider<List<TransactionModel>>((ref) {
+  final month = ref.watch(selectedMonthProvider);
+  return (ref.watch(transactionListProvider).valueOrNull ??
+          <TransactionModel>[])
+      .where((tx) => tx.date.year == month.year && tx.date.month == month.month)
+      .toList();
+});
+
+final monthTotalsProvider = Provider<AsyncValue<Map<String, double>>>((ref) {
   final transactions =
       ref.watch(transactionListProvider).valueOrNull ?? <TransactionModel>[];
-  final now = DateTime.now();
+  final now = ref.watch(selectedMonthProvider);
   double income = 0, expense = 0;
   for (final tx in transactions
       .where((tx) => tx.date.year == now.year && tx.date.month == now.month)) {
@@ -163,5 +178,6 @@ final monthTotalsProvider = FutureProvider<Map<String, double>>((ref) async {
       expense += tx.amount;
     }
   }
-  return {'income': income, 'expense': expense, 'balance': income - expense};
+  return AsyncValue.data(
+      {'income': income, 'expense': expense, 'balance': income - expense});
 });

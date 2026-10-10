@@ -262,6 +262,10 @@ Usar `--prod` somente para uma publicação autorizada. O fluxo principal de pro
 
 O diretório publicado é somente `build/web`. O asset `assets/.env` contém parâmetros públicos de cliente e `MONTHLY_LIMIT_CLOUD_SYNC=true`. `.env.local`, `.vercel/`, backups e arquivos locais estão excluídos do upload por `.vercelignore`. Nunca inserir service-role ou segredos de servidor nos assets Web. Consulte [a documentação de publicação](docs/monthly-limit-sync.md#publicação).
 
+## Cartão Minhas finanças
+
+Na tela inicial, o cartão mostra a foto da conta (com opção de trocar ou restaurar), o mês selecionado, a quantidade de lançamentos e uma barra segmentada de uso do teto. A foto personalizada é privada e sincroniza pela conta. Saldo, movimentações, barra e **Meus limites** compartilham o mês e os valores atualizados. Veja [foto, privacidade e funcionamento](docs/profile-summary.md).
+
 ## Limpeza de registros
 
 Em **Ajustes → Limpar registros**, escolha entradas, saídas, diário, contas recorrentes ou selecione tudo, por dia, mês, ano ou todo o histórico. A revisão mostra as quantidades; excluir exige autorização marcada e a palavra **EXCLUIR**. A ação não pode ser desfeita no aplicativo. Lançamentos da conta sincronizam a exclusão; diário e recorrências são locais ao dispositivo. Tema, login, teto mensal e orçamentos por categoria são preservados. Veja [alcance dos filtros e confirmação](docs/record-deletion.md).

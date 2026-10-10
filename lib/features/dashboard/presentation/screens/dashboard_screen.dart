@@ -17,6 +17,8 @@ import '../widgets/monthly_limit_sheet.dart';
 import '../widgets/termometro_orb.dart';
 import '../../data/monthly_limit_service.dart';
 import '../providers/monthly_limit_provider.dart';
+import '../providers/avatar_provider.dart';
+import '../widgets/profile_summary_card.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -46,6 +48,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     if (state == AppLifecycleState.resumed) {
       ref.read(monthlyLimitProvider.notifier).synchronize();
       ref.read(transactionListProvider.notifier).synchronize();
+      ref.read(avatarProvider.notifier).synchronize();
     }
   }
 
@@ -63,6 +66,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       await Future.wait([
         transactions.synchronize(),
         monthlyLimit.synchronize(),
+        ref.read(avatarProvider.notifier).synchronize(),
       ]);
       if (!mounted || owner != ref.read(transactionOwnerProvider)) return;
       final transactionStatus = ref.read(transactionSyncStatusProvider);
@@ -104,7 +108,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     final isGuest = ref.watch(isGuestProvider);
-    final txList = ref.watch(transactionListProvider);
+    final txList = ref
+        .watch(transactionListProvider)
+        .whenData((_) => ref.watch(selectedMonthTransactionsProvider));
     final totals = ref.watch(monthTotalsProvider);
     final limitState = ref.watch(monthlyLimitProvider);
     final limit = limitState.valueOrNull?.record.value ??
@@ -157,7 +163,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                     const SyncIndicator(),
                     const SizedBox(height: 8),
                   ],
-                  _buildSpaceSwitcher(theme),
+                  ProfileSummaryCard(
+                      percent: percent,
+                      onLimitsTap: () => _openLimitsSheet(expense)),
                   const SizedBox(height: 24),
                   Text('Olá, $displayName 👋',
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -304,40 +312,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     );
   }
 
-  Widget _buildSpaceSwitcher(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: theme.colorScheme.outline)),
-      child: Row(
-        children: [
-          Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent]),
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Center(
-                  child: Text('👤', style: TextStyle(fontSize: 18)))),
-          const SizedBox(width: 12),
-          Expanded(
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                Text('Pessoal',
-                    style: theme.textTheme.titleSmall?.copyWith(fontSize: 14)),
-                Text('Seu espaço padrão', style: theme.textTheme.bodySmall)
-              ])),
-          Icon(Icons.expand_more,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFlowCard(
       ThemeData theme, String label, double value, Color color, bool isIncome) {
     return Container(
@@ -389,10 +363,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (_) => MonthlyLimitSheet(
-            currentLimit: record.value,
-            currentSpent: spent,
-            owner: owner,
-            onChanged: _saveLimit));
+        builder: (_) => Consumer(
+            builder: (_, sheetRef, __) => MonthlyLimitSheet(
+                currentLimit: record.value,
+                currentSpent: sheetRef
+                        .watch(monthTotalsProvider)
+                        .valueOrNull?['expense'] ??
+                    spent,
+                periodLabel: DateFormat.yMMMM('pt_BR')
+                    .format(sheetRef.watch(selectedMonthProvider)),
+                owner: owner,
+                onChanged: _saveLimit)));
   }
 }

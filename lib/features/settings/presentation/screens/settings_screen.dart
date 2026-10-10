@@ -7,6 +7,7 @@ import '../../../../app/theme/theme_provider.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'clear_records_screen.dart';
+import '../../../dashboard/presentation/providers/avatar_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final isGuest = ref.watch(isGuestProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final customPhoto = ref.watch(avatarProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(
@@ -86,12 +88,12 @@ class SettingsScreen extends ConsumerWidget {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundImage: user.userMetadata?['avatar_url'] != null
-                        ? NetworkImage(user.userMetadata!['avatar_url'])
-                        : null,
-                    child: user.userMetadata?['avatar_url'] == null
-                        ? const Icon(Icons.person)
-                        : null,
+                    foregroundImage: customPhoto != null
+                        ? MemoryImage(customPhoto)
+                        : user.userMetadata?['avatar_url'] != null
+                            ? NetworkImage(user.userMetadata!['avatar_url'])
+                            : null,
+                    child: const Icon(Icons.person),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
