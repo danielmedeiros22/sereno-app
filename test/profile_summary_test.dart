@@ -13,10 +13,50 @@ import 'package:sereno_app/features/dashboard/presentation/widgets/segmented_lim
 import 'package:sereno_app/features/transactions/data/transaction_model.dart';
 import 'package:sereno_app/features/transactions/data/transaction_sync_service.dart';
 import 'package:sereno_app/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:sereno_app/features/transactions/presentation/providers/summary_period.dart';
 
 void main() {
   setUpAll(() => initializeDateFormatting('pt_BR'));
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  test('week spans Monday to Sunday across years and excludes next Monday', () {
+    final period = SummaryPeriod(SummaryPeriodType.week, DateTime(2027, 1, 1));
+    expect(period.start, DateTime(2026, 12, 28));
+    expect(period.endExclusive, DateTime(2027, 1, 4));
+    expect(period.contains(DateTime(2026, 12, 27, 23, 59)), false);
+    expect(period.contains(DateTime(2027, 1, 3, 23, 59)), true);
+    expect(period.contains(DateTime(2027, 1, 4)), false);
+    expect(period.label, '28/12/2026 – 03/01/2027');
+  });
+
+  test('day and week selections use the same records for count and totals',
+      () async {
+    final service = TransactionSyncService();
+    for (final day in [4, 5, 10, 11, 12]) {
+      await service.save(TransactionModel(
+          type: 'expense',
+          amount: day.toDouble(),
+          category: 'Mercado',
+          date: DateTime(2026, 10, day, 23, 59)));
+    }
+    final container = ProviderContainer(overrides: [
+      transactionOwnerProvider.overrideWithValue(null),
+      selectedMonthProvider.overrideWith((ref) => DateTime(2026, 10, 10)),
+    ]);
+    await container.read(transactionListProvider.notifier).load();
+    container.read(summaryPeriodTypeProvider.notifier).state =
+        SummaryPeriodType.day;
+    expect(container.read(selectedMonthTransactionsProvider), hasLength(1));
+    expect(container.read(monthTotalsProvider).valueOrNull?['expense'], 10);
+    container.read(summaryPeriodTypeProvider.notifier).state =
+        SummaryPeriodType.week;
+    expect(container.read(selectedMonthTransactionsProvider), hasLength(3));
+    expect(container.read(monthTotalsProvider).valueOrNull?['expense'], 26);
+    container.read(summaryPeriodTypeProvider.notifier).state =
+        SummaryPeriodType.month;
+    expect(container.read(selectedMonthTransactionsProvider), hasLength(5));
+    expect(container.read(monthTotalsProvider).valueOrNull?['expense'], 42);
+    container.dispose();
+  });
   test('month selection changes totals and count without mixing other months',
       () async {
     final service = TransactionSyncService();
@@ -95,6 +135,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.text('64% do teto utilizado'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Dia'));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('0% do teto utilizado'), findsOneWidget);
+    container.read(selectedMonthProvider.notifier).state =
+        DateTime(2026, 10, 10);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('64% do teto utilizado'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Semana'));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('05/10/2026 – 11/10/2026'), findsOneWidget);
     await tester.ensureVisible(find.text('Ver meus limites'));
     await tester.tap(find.text('Ver meus limites'));
     for (var i = 0; i < 20; i++) {
@@ -102,6 +152,7 @@ void main() {
     }
     expect(find.text('64% do teto utilizado', skipOffstage: false),
         findsNWidgets(2));
+    expect(find.text('Referência: 05/10/2026 – 11/10/2026'), findsOneWidget);
     await container.read(monthlyLimitProvider.notifier).save(7000);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('32% do teto utilizado', skipOffstage: false),

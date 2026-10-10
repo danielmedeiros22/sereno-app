@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
+import '../../../transactions/presentation/providers/summary_period.dart';
 import '../providers/avatar_provider.dart';
 import 'segmented_limit_progress.dart';
 
@@ -77,7 +78,34 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
   Future<void> _selectMonth() async {
     final owner = ref.read(transactionOwnerProvider);
     final current = ref.read(selectedMonthProvider);
+    final type = ref.read(summaryPeriodTypeProvider);
     final dates = ref.read(transactionListProvider).valueOrNull ?? [];
+    if (type != SummaryPeriodType.month) {
+      final candidates = [
+        DateTime.now(),
+        current,
+        ...dates.map((tx) => tx.date)
+      ];
+      final years = candidates.map((date) => date.year).toList()..sort();
+      final selection = await showDatePicker(
+          context: context,
+          locale: const Locale('pt', 'BR'),
+          initialDate: current,
+          firstDate: DateTime(years.first - 1),
+          lastDate: DateTime(years.last + 1, 12, 31),
+          helpText: type == SummaryPeriodType.day
+              ? 'Escolher dia'
+              : 'Escolher um dia da semana',
+          confirmText: 'Consultar',
+          cancelText: 'Cancelar');
+      if (mounted &&
+          selection != null &&
+          owner == ref.read(transactionOwnerProvider) &&
+          type == ref.read(summaryPeriodTypeProvider)) {
+        ref.read(selectedMonthProvider.notifier).state = selection;
+      }
+      return;
+    }
     final years = {
       DateTime.now().year,
       current.year,
@@ -126,7 +154,8 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
                 )));
     if (mounted &&
         selection != null &&
-        owner == ref.read(transactionOwnerProvider)) {
+        owner == ref.read(transactionOwnerProvider) &&
+        type == ref.read(summaryPeriodTypeProvider)) {
       ref.read(selectedMonthProvider.notifier).state = selection;
     }
   }
@@ -139,7 +168,7 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
     final name = user?.userMetadata?['full_name'] as String? ?? 'Visitante';
     final bytes = ref.watch(avatarProvider).valueOrNull;
     final googlePhoto = user?.userMetadata?['avatar_url'] as String?;
-    final month = ref.watch(selectedMonthProvider);
+    final period = ref.watch(summaryPeriodProvider);
     final count = ref.watch(selectedMonthTransactionsProvider).length;
     final initial =
         name.trim().isEmpty ? '?' : name.trim().characters.first.toUpperCase();
@@ -203,6 +232,18 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
               ])),
         ]),
         const SizedBox(height: 12),
+        Wrap(spacing: 8, children: [
+          for (final type in SummaryPeriodType.values)
+            ChoiceChip(
+                label: Text(switch (type) {
+                  SummaryPeriodType.day => 'Dia',
+                  SummaryPeriodType.week => 'Semana',
+                  SummaryPeriodType.month => 'Mês',
+                }),
+                selected: period.type == type,
+                onSelected: (_) =>
+                    ref.read(summaryPeriodTypeProvider.notifier).state = type),
+        ]),
         Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 12,
@@ -210,10 +251,13 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
               TextButton.icon(
                   onPressed: _selectMonth,
                   icon: const Icon(Icons.calendar_month, size: 18),
-                  label: Text(DateFormat.yMMMM('pt_BR').format(month))),
+                  label: Text(period.label)),
               Text('$count ${count == 1 ? 'lançamento' : 'lançamentos'}',
                   style: theme.textTheme.bodySmall),
             ]),
+        if (period.type != SummaryPeriodType.month)
+          Text('Gastos do período em relação ao teto mensal',
+              style: theme.textTheme.bodySmall),
         InkWell(
             onTap: widget.onLimitsTap,
             borderRadius: BorderRadius.circular(6),

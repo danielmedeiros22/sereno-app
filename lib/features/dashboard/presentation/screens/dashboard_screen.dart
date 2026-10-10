@@ -370,8 +370,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                         .watch(monthTotalsProvider)
                         .valueOrNull?['expense'] ??
                     spent,
-                periodLabel: DateFormat.yMMMM('pt_BR')
-                    .format(sheetRef.watch(selectedMonthProvider)),
+                periodLabel: sheetRef.watch(summaryPeriodProvider).label,
                 owner: owner,
                 onChanged: _saveLimit)));
   }

@@ -9,6 +9,7 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/supabase_transaction_remote.dart';
 import '../../data/transaction_sync_service.dart';
 import '../../data/transaction_model.dart';
+import 'summary_period.dart';
 
 final transactionOwnerProvider = Provider<String?>((ref) {
   final userId = ref.watch(currentUserProvider.select((user) => user?.id));
@@ -153,25 +154,30 @@ class TransactionListNotifier
 final selectedMonthProvider = StateProvider<DateTime>((ref) {
   ref.watch(transactionOwnerProvider);
   final now = DateTime.now();
-  return DateTime(now.year, now.month);
+  return DateTime(now.year, now.month, now.day);
 });
+
+final summaryPeriodTypeProvider = StateProvider<SummaryPeriodType>((ref) {
+  ref.watch(transactionOwnerProvider);
+  return SummaryPeriodType.month;
+});
+
+final summaryPeriodProvider = Provider<SummaryPeriod>((ref) => SummaryPeriod(
+    ref.watch(summaryPeriodTypeProvider), ref.watch(selectedMonthProvider)));
 
 final selectedMonthTransactionsProvider =
     Provider<List<TransactionModel>>((ref) {
-  final month = ref.watch(selectedMonthProvider);
+  final period = ref.watch(summaryPeriodProvider);
   return (ref.watch(transactionListProvider).valueOrNull ??
           <TransactionModel>[])
-      .where((tx) => tx.date.year == month.year && tx.date.month == month.month)
+      .where((tx) => period.contains(tx.date))
       .toList();
 });
 
 final monthTotalsProvider = Provider<AsyncValue<Map<String, double>>>((ref) {
-  final transactions =
-      ref.watch(transactionListProvider).valueOrNull ?? <TransactionModel>[];
-  final now = ref.watch(selectedMonthProvider);
+  final transactions = ref.watch(selectedMonthTransactionsProvider);
   double income = 0, expense = 0;
-  for (final tx in transactions
-      .where((tx) => tx.date.year == now.year && tx.date.month == now.month)) {
+  for (final tx in transactions) {
     if (tx.isIncome) {
       income += tx.amount;
     } else {
