@@ -17,6 +17,7 @@ import 'package:sereno_app/features/recurring/data/recurring_schedule.dart';
 import 'package:sereno_app/features/recurring/presentation/providers/recurring_provider.dart';
 import 'package:sereno_app/features/transactions/data/transaction_model.dart';
 import 'package:sereno_app/features/transactions/presentation/providers/transaction_provider.dart';
+import 'package:sereno_app/features/transactions/presentation/providers/summary_period.dart';
 
 RecurringModel bill(
         {String id = 'bill',
@@ -269,6 +270,65 @@ void main() {
     await container.read(notificationPaymentsProvider.future);
     await container.pump();
     expect(container.read(serenoAlertsProvider).requireValue, hasLength(1));
+  });
+
+  test('alerts and budget totals follow saved limits and the same transactions',
+      () async {
+    final now = DateTime.now();
+    final container = ProviderContainer(overrides: [
+      transactionOwnerProvider.overrideWithValue(null),
+      monthlyLimitServiceProvider.overrideWithValue(MonthlyLimitService()),
+      notificationDateProvider.overrideWithValue(now),
+      selectedMonthProvider.overrideWith((ref) => now),
+    ]);
+    addTearDown(container.dispose);
+    container.listen(serenoAlertsProvider, (_, __) {});
+    await container.read(notificationPreferencesProvider.notifier).ready;
+    final limit = container.read(monthlyLimitProvider.notifier);
+    await limit.ready;
+    await limit.save(100);
+    final transactions = container.read(transactionListProvider.notifier);
+    await transactions.load();
+    final budgets = container.read(budgetListProvider.notifier);
+    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 100));
+    await budgets.synchronize();
+    await container.read(recurringListProvider.notifier).load();
+    await transactions.add(TransactionModel(
+        id: 'expense',
+        type: 'expense',
+        amount: 90,
+        category: ' Café ',
+        date: now));
+    await transactions.add(TransactionModel(
+        id: 'income',
+        type: 'income',
+        amount: 500,
+        category: 'Café',
+        date: now));
+    await container.read(notificationPaymentsProvider.future);
+    await container.pump();
+    expect(container.read(categorySpentProvider).requireValue['café'], 90);
+    expect(container.read(monthTotalsProvider).requireValue['expense'], 90);
+    expect(container.read(serenoAlertsProvider).requireValue, hasLength(2));
+    container.read(summaryPeriodTypeProvider.notifier).state =
+        SummaryPeriodType.day;
+    container.read(selectedMonthProvider.notifier).state =
+        DateTime(now.year, now.month, now.day - 1);
+    expect(container.read(monthTotalsProvider).requireValue['expense'], 0);
+    expect(container.read(serenoAlertsProvider).requireValue, hasLength(2));
+    await limit.save(200);
+    await container.pump();
+    expect(container.read(serenoAlertsProvider).requireValue.single.type,
+        SerenoAlertType.budget);
+    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 200));
+    await budgets.synchronize();
+    await container.pump();
+    expect(container.read(serenoAlertsProvider).requireValue, isEmpty);
+    await limit.save(100);
+    await transactions.remove('expense');
+    await container.pump();
+    expect(container.read(categorySpentProvider).requireValue, isEmpty);
+    expect(container.read(serenoAlertsProvider).requireValue, isEmpty);
   });
 
   testWidgets(

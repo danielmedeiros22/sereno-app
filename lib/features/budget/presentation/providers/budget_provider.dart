@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/financial_record_sync_provider.dart';
 import '../../data/local_budget_service.dart';
 import '../../data/budget_model.dart';
+import '../../../transactions/data/default_categories.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 
 final localBudgetServiceProvider = Provider<LocalBudgetService>((ref) =>
@@ -50,7 +51,8 @@ final categorySpentProvider = Provider<AsyncValue<Map<String, double>>>(
               t.isExpense &&
               t.date.toLocal().year == now.year &&
               t.date.toLocal().month == now.month)) {
-            spent[tx.category] = (spent[tx.category] ?? 0) + tx.amount;
+            final key = categoryNameKey(tx.category);
+            spent[key] = (spent[key] ?? 0) + tx.amount;
           }
           return spent;
         }));

@@ -267,7 +267,11 @@ void main() {
       localTransactionServiceProvider.overrideWithValue(account),
     ]);
     await container.read(transactionListProvider.notifier).load();
-    expect(container.read(categorySpentProvider).valueOrNull?['Café'], 12);
+    expect(
+        container
+            .read(categorySpentProvider)
+            .valueOrNull?[categoryNameKey('Café')],
+        12);
     container.dispose();
   });
 

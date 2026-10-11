@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../providers/budget_provider.dart';
 import 'budget_form_screen.dart';
+import '../../../transactions/data/default_categories.dart';
 import '../../../transactions/presentation/widgets/financial_sync_banner.dart';
 
 class BudgetListScreen extends ConsumerWidget {
@@ -83,7 +84,7 @@ class BudgetListScreen extends ConsumerWidget {
             itemCount: budgets.length,
             itemBuilder: (context, index) {
               final budget = budgets[index];
-              final catSpent = spent[budget.category] ?? 0;
+              final catSpent = spent[categoryNameKey(budget.category)] ?? 0;
               final percent =
                   budget.limit > 0 ? (catSpent / budget.limit) * 100 : 0.0;
               final color = AppColors.riskFor(percent);

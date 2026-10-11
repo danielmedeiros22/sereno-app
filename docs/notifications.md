@@ -8,6 +8,7 @@ A central está ligada aos dados financeiros disponíveis. Os avisos desaparecem
 
 - **Teto mensal:** considera somente saídas do mês atual, independentemente do filtro Dia/Semana/Mês do painel.
 - **Orçamentos por categoria:** compara as saídas do mês atual com o teto de cada categoria, incluindo categorias personalizadas.
+- **Consistência entre áreas:** Meus limites e o termômetro compartilham o teto salvo e os lançamentos com a central. A tela de orçamentos e os alertas agrupam categorias pela mesma chave (ignorando maiúsculas/minúsculas e espaços extras). O termômetro acompanha o período selecionado no painel; os alertas de teto/orçamento continuam no mês atual. Digitar um teto é prévia: somente salvar e confirmar muda o teto usado pelos alertas.
 - **Percentual:** escolha 50%, 75%, 90% (padrão) ou 100% para começar a avisar. Atingir e ultrapassar o teto têm rótulos próprios.
 - **Contas recorrentes:** mostra contas ativas não pagas, atrasadas, vencendo hoje ou dentro da antecedência escolhida: no dia, 1, 3 (padrão), 7 ou 14 dias antes. Cada conta gera no máximo um aviso, priorizando o vencimento não pago mais próximo já calculado.
 - **Preferências:** cada tipo pode ser desativado. São persistidas neste dispositivo, separadas entre visitante e cada conta; não sincronizam entre aparelhos.
