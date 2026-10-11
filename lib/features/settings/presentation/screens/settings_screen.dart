@@ -6,6 +6,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/theme_provider.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/providers/profile_name_provider.dart';
+import '../../../auth/presentation/widgets/edit_profile_name_button.dart';
 import 'clear_records_screen.dart';
 import '../../../dashboard/presentation/providers/avatar_provider.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
@@ -112,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.userMetadata?['full_name'] ?? 'Sem nome',
+                          ref.watch(profileNameProvider),
                           style: theme.textTheme.titleMedium,
                         ),
                         Text(user.email ?? '',
@@ -120,6 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ],
                     ),
                   ),
+                  const EditProfileNameButton(),
                 ],
               ),
             ),

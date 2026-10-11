@@ -14,6 +14,14 @@ A foto personalizada sincroniza ao abrir, retomar ou atualizar a tela e a cada 3
 
 Migração `supabase/migrations/202610100004_profile_avatars.sql` aplicada ao projeto `rdlofauxvsbdytvvmlzd` em 10/10/2026 após confirmar ausência de buckets e políticas. Não reaplicar sem conferir o esquema.
 
+## Nome de exibição
+
+Contas conectadas possuem um botão **Editar nome** (lápis) no cartão **Minhas finanças** e no perfil em **Ajustes**. O formulário permite até 80 caracteres, exige um nome preenchido e só grava ao tocar em **Salvar**. **Cancelar** descarta o rascunho. A alteração aparece nos dois cartões e na saudação do painel.
+
+O nome é salvo no metadado `sereno_display_name` da própria conta pelo Auth do Supabase. O e-mail, a identidade do login e o nome original do Google permanecem iguais. Sem personalização, usa o nome original da conta. Esse metadado serve apenas para exibição, nunca para permissões. Não exige tabela nem migração nova.
+
+A leitura ocorre ao abrir, retomar ou atualizar o painel e a cada 30 segundos enquanto o recurso está ativo. Cada conta usa seu próprio estado; respostas de outra identidade são ignoradas. Salvar exige conexão; uma falha mantém o nome anterior e permite tentar novamente. Visitantes continuam identificados como **Visitante**. Testes simulam dois dispositivos, reabertura, falha, cancelamento e preservação do e-mail; não representam teste manual físico entre aparelhos.
+
 ## Teto e gastos
 
 A barra e o termômetro usam os mesmos totais reativos dos lançamentos do período e o mesmo provider do teto mensal. **Ver meus limites** abre a configuração existente, com confirmação antes de gravar e indicação do período consultado. A tela aberta acompanha mudanças nos gastos. Digitar um teto mostra uma prévia na tela de limites; o cartão usa o teto salvo até a confirmação.

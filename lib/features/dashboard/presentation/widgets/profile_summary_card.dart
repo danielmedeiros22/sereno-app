@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/providers/profile_name_provider.dart';
+import '../../../auth/presentation/widgets/edit_profile_name_button.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/presentation/providers/summary_period.dart';
 import '../providers/avatar_provider.dart';
@@ -108,7 +110,7 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
     final theme = Theme.of(context);
     final owner = ref.watch(transactionOwnerProvider);
     final user = owner == null ? null : ref.watch(currentUserProvider);
-    final name = user?.userMetadata?['full_name'] as String? ?? 'Visitante';
+    final name = owner == null ? 'Visitante' : ref.watch(profileNameProvider);
     final bytes = ref.watch(avatarProvider).valueOrNull;
     final googlePhoto = user?.userMetadata?['avatar_url'] as String?;
     final period = ref.watch(summaryPeriodProvider);
@@ -145,6 +147,7 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
               ])),
+          if (owner != null) const EditProfileNameButton(),
         ]),
         const SizedBox(height: 12),
         Wrap(spacing: 8, children: [

@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/guest_service.dart';
 import '../../../../core/services/sync/sync_indicator.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../auth/presentation/providers/profile_name_provider.dart';
 import '../../../transactions/data/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/presentation/screens/transaction_form_screen.dart';
@@ -54,6 +54,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       ref.read(monthlyLimitProvider.notifier).synchronize();
       ref.read(transactionListProvider.notifier).synchronize();
       ref.read(avatarProvider.notifier).synchronize();
+      ref.read(profileNameProvider.notifier).synchronize();
       ref.read(categoryListProvider.notifier).synchronize();
       ref.read(budgetListProvider.notifier).synchronize();
       ref.read(recurringListProvider.notifier).synchronize();
@@ -77,6 +78,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         transactions.synchronize(),
         monthlyLimit.synchronize(),
         ref.read(avatarProvider.notifier).synchronize(),
+        ref.read(profileNameProvider.notifier).synchronize(),
         ref.read(categoryListProvider.notifier).synchronize(),
         ref.read(budgetListProvider.notifier).synchronize(),
         ref.read(recurringListProvider.notifier).synchronize(),
@@ -125,7 +127,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final user = ref.watch(currentUserProvider);
     final isGuest = ref.watch(isGuestProvider);
     final txList = ref
         .watch(transactionListProvider)
@@ -136,9 +137,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final limit = limitState.valueOrNull?.record.value ??
         MonthlyLimitService.defaultLimit;
 
-    final displayName = isGuest
-        ? 'Visitante'
-        : user?.userMetadata?['full_name']?.split(' ').first ?? 'você';
+    final displayName =
+        isGuest ? 'Visitante' : ref.watch(profileNameProvider).split(' ').first;
     final income = totals.value?['income'] ?? 0;
     final expense = totals.value?['expense'] ?? 0;
     final balance = income - expense;

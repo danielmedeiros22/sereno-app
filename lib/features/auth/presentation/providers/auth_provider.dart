@@ -25,6 +25,19 @@ final authControllerProvider = Provider<AuthController>((ref) {
 });
 
 class AuthController {
+  Future<User?> readProfile() async =>
+      (await SupabaseService.auth.getUser()).user;
+
+  Future<User?> updateDisplayName(String owner, String name) async {
+    if (SupabaseService.currentUser?.id != owner) {
+      throw StateError('A conta mudou.');
+    }
+    return (await SupabaseService.auth.updateUser(
+      UserAttributes(data: {'sereno_display_name': name}),
+    ))
+        .user;
+  }
+
   Future<void> signInWithGoogle() async {
     try {
       if (kIsWeb) {
