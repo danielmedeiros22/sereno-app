@@ -42,6 +42,11 @@ void main() {
           container: container,
           child: const MaterialApp(home: SettingsScreen())));
       await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Trocar imagem'));
+      await tester.pumpAndSettle();
+      expect(find.text('Escolher imagem'), findsOneWidget);
+      await tester.tap(find.text('Cancelar'));
+      await tester.pumpAndSettle();
       expect(find.text('Sair da conta'), findsOneWidget);
       expect(tester.getRect(find.text('Sair da conta')).bottom, lessThan(600));
       await tester.tap(find.text('Sair da conta'));

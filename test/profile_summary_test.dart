@@ -8,8 +8,8 @@ import 'package:sereno_app/features/auth/presentation/providers/auth_provider.da
 import 'package:sereno_app/features/dashboard/data/monthly_limit_service.dart';
 import 'package:sereno_app/features/dashboard/presentation/providers/monthly_limit_provider.dart';
 import 'package:sereno_app/features/dashboard/presentation/screens/dashboard_screen.dart';
-import 'package:sereno_app/features/dashboard/presentation/widgets/profile_summary_card.dart';
 import 'package:sereno_app/features/dashboard/presentation/widgets/segmented_limit_progress.dart';
+import 'package:sereno_app/features/settings/presentation/screens/settings_screen.dart';
 import 'package:sereno_app/features/transactions/data/transaction_model.dart';
 import 'package:sereno_app/features/transactions/data/transaction_sync_service.dart';
 import 'package:sereno_app/features/transactions/presentation/providers/transaction_provider.dart';
@@ -93,6 +93,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
         home: Scaffold(body: SegmentedLimitProgress(percent: 64))));
     expect(find.text('64% do teto utilizado'), findsOneWidget);
+    expect(find.byTooltip('Trocar imagem'), findsNothing);
     final bars = tester
         .widgetList<LinearProgressIndicator>(
             find.byType(LinearProgressIndicator))
@@ -172,14 +173,11 @@ void main() {
 
   testWidgets('photo options can be cancelled without changing the avatar',
       (tester) async {
-    await tester.pumpWidget(ProviderScope(
-        overrides: [
-          currentUserProvider.overrideWithValue(null),
-          transactionOwnerProvider.overrideWithValue(null),
-        ],
-        child: MaterialApp(
-            home: Scaffold(
-                body: ProfileSummaryCard(percent: 0, onLimitsTap: () {})))));
+    await tester.pumpWidget(ProviderScope(overrides: [
+      currentUserProvider.overrideWithValue(null),
+      transactionOwnerProvider.overrideWithValue(null),
+      isGuestProvider.overrideWith((ref) => true),
+    ], child: const MaterialApp(home: SettingsScreen())));
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Trocar imagem'));
     await tester.pumpAndSettle();

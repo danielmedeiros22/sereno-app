@@ -8,12 +8,18 @@ import '../../../../core/services/guest_service.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'clear_records_screen.dart';
 import '../../../dashboard/presentation/providers/avatar_provider.dart';
+import '../../../transactions/presentation/providers/transaction_provider.dart';
 
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final user = ref.watch(currentUserProvider);
     final isGuest = ref.watch(isGuestProvider);
@@ -47,12 +53,17 @@ class SettingsScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  const CircleAvatar(
-                    radius: 28,
-                    backgroundColor: AppColors.primary,
-                    child: Icon(Icons.person_outline,
-                        color: Colors.white, size: 28),
-                  ),
+                  _editablePhoto(
+                      CircleAvatar(
+                        radius: 28,
+                        foregroundImage: customPhoto == null
+                            ? null
+                            : MemoryImage(customPhoto),
+                        backgroundColor: AppColors.primary,
+                        child: const Icon(Icons.person_outline,
+                            color: Colors.white, size: 28),
+                      ),
+                      size: 56),
                   const SizedBox(height: 12),
                   Text('Modo visitante', style: theme.textTheme.titleMedium),
                   const SizedBox(height: 4),
@@ -86,7 +97,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  CircleAvatar(
+                  _editablePhoto(CircleAvatar(
                     radius: 24,
                     foregroundImage: customPhoto != null
                         ? MemoryImage(customPhoto)
@@ -94,7 +105,7 @@ class SettingsScreen extends ConsumerWidget {
                             ? NetworkImage(user.userMetadata!['avatar_url'])
                             : null,
                     child: const Icon(Icons.person),
-                  ),
+                  )),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -193,6 +204,96 @@ class SettingsScreen extends ConsumerWidget {
         return 'Escuro';
       case ThemeMode.system:
         return 'Segue o sistema';
+    }
+  }
+
+  bool _changing = false;
+
+  Widget _editablePhoto(Widget photo, {double size = 48}) => Tooltip(
+        message: 'Trocar imagem',
+        child: Semantics(
+          button: true,
+          label: 'Trocar imagem',
+          child: InkWell(
+            onTap: _changing ? null : _changePhoto,
+            borderRadius: BorderRadius.circular(size / 2),
+            child: SizedBox(
+                width: size,
+                height: size,
+                child: Stack(children: [
+                  Positioned.fill(child: photo),
+                  Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        child: _changing
+                            ? const SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.photo_camera,
+                                size: 12, color: Colors.white),
+                      )),
+                ])),
+          ),
+        ),
+      );
+
+  Future<void> _changePhoto() async {
+    final owner = ref.read(transactionOwnerProvider);
+    final choice = await showModalBottomSheet<String>(
+        context: context,
+        builder: (context) => SafeArea(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+              ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Escolher imagem'),
+                  subtitle: Text(owner == null
+                      ? 'Salva apenas neste dispositivo'
+                      : 'Foto privada, sincronizada com sua conta'),
+                  onTap: () => Navigator.pop(context, 'pick')),
+              ListTile(
+                  leading: const Icon(Icons.account_circle_outlined),
+                  title: Text(owner == null
+                      ? 'Usar ícone padrão'
+                      : 'Usar foto da conta Google'),
+                  onTap: () => Navigator.pop(context, 'reset')),
+              ListTile(
+                  title: const Text('Cancelar'),
+                  onTap: () => Navigator.pop(context)),
+            ])));
+    if (!mounted ||
+        choice == null ||
+        owner != ref.read(transactionOwnerProvider)) {
+      return;
+    }
+    setState(() => _changing = true);
+    try {
+      final bytes =
+          choice == 'pick' ? await ref.read(avatarPickerProvider)() : null;
+      if (!mounted ||
+          (choice == 'pick' && bytes == null) ||
+          owner != ref.read(transactionOwnerProvider)) {
+        return;
+      }
+      await ref.read(avatarProvider.notifier).change(bytes);
+      if (mounted && owner == ref.read(transactionOwnerProvider)) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(owner == null
+                ? 'Imagem salva neste dispositivo.'
+                : 'Foto atualizada na sua conta.')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text(
+                'Não foi possível trocar a imagem. Verifique a conexão e tente novamente.')));
+      }
+    } finally {
+      if (mounted) setState(() => _changing = false);
     }
   }
 

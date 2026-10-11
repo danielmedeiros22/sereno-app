@@ -275,7 +275,7 @@ O diretório publicado é somente `build/web`. O asset `assets/.env` contém par
 
 ## Cartão Minhas finanças
 
-Na tela inicial, o cartão mostra a foto da conta (com opção de trocar ou restaurar), o período selecionado (Dia/Semana/Mês), a quantidade de lançamentos e uma barra segmentada de uso do teto mensal. A foto personalizada é privada e sincroniza pela conta. Saldo, movimentações, barra e **Meus limites** compartilham o período e os valores atualizados. Veja [foto, privacidade e funcionamento](docs/profile-summary.md).
+Na tela inicial, o cartão mostra a foto da conta, o período selecionado (Dia/Semana/Mês), a quantidade de lançamentos e uma barra segmentada de uso do teto mensal. Para trocar ou restaurar a foto, toque no avatar do cartão de perfil em **Ajustes**. A foto personalizada é privada e sincroniza pela conta. Saldo, movimentações, barra e **Meus limites** compartilham o período e os valores atualizados. Veja [foto, privacidade e funcionamento](docs/profile-summary.md).
 
 ## Limpeza de registros
 

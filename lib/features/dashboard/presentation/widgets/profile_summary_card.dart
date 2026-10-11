@@ -18,63 +18,6 @@ class ProfileSummaryCard extends ConsumerStatefulWidget {
 }
 
 class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
-  bool _changing = false;
-
-  Future<void> _changePhoto() async {
-    final owner = ref.read(transactionOwnerProvider);
-    final choice = await showModalBottomSheet<String>(
-        context: context,
-        builder: (context) => SafeArea(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-              ListTile(
-                  leading: const Icon(Icons.photo_library_outlined),
-                  title: const Text('Escolher imagem'),
-                  subtitle: Text(owner == null
-                      ? 'Salva apenas neste dispositivo'
-                      : 'Foto privada, sincronizada com sua conta'),
-                  onTap: () => Navigator.pop(context, 'pick')),
-              ListTile(
-                  leading: const Icon(Icons.account_circle_outlined),
-                  title: Text(owner == null
-                      ? 'Usar ícone padrão'
-                      : 'Usar foto da conta Google'),
-                  onTap: () => Navigator.pop(context, 'reset')),
-              ListTile(
-                  title: const Text('Cancelar'),
-                  onTap: () => Navigator.pop(context)),
-            ])));
-    if (!mounted ||
-        choice == null ||
-        owner != ref.read(transactionOwnerProvider)) {
-      return;
-    }
-    setState(() => _changing = true);
-    try {
-      final bytes =
-          choice == 'pick' ? await ref.read(avatarPickerProvider)() : null;
-      if (!mounted ||
-          (choice == 'pick' && bytes == null) ||
-          owner != ref.read(transactionOwnerProvider)) {
-        return;
-      }
-      await ref.read(avatarProvider.notifier).change(bytes);
-      if (mounted && owner == ref.read(transactionOwnerProvider)) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(owner == null
-                ? 'Imagem salva neste dispositivo.'
-                : 'Foto atualizada na sua conta.')));
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text(
-                'Não foi possível trocar a imagem. Verifique a conexão e tente novamente.')));
-      }
-    } finally {
-      if (mounted) setState(() => _changing = false);
-    }
-  }
-
   Future<void> _selectMonth() async {
     final owner = ref.read(transactionOwnerProvider);
     final current = ref.read(selectedMonthProvider);
@@ -190,35 +133,7 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
           border: Border.all(color: theme.colorScheme.outline)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          Tooltip(
-              message: 'Trocar imagem',
-              child: Semantics(
-                  button: true,
-                  label: 'Trocar imagem',
-                  child: InkWell(
-                      onTap: _changing ? null : _changePhoto,
-                      borderRadius: BorderRadius.circular(28),
-                      child: SizedBox(
-                          width: 56,
-                          height: 56,
-                          child: Stack(children: [
-                            Positioned.fill(child: ClipOval(child: image)),
-                            Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: CircleAvatar(
-                                    radius: 10,
-                                    backgroundColor: theme.colorScheme.primary,
-                                    child: _changing
-                                        ? const SizedBox(
-                                            width: 12,
-                                            height: 12,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: Colors.white))
-                                        : const Icon(Icons.photo_camera,
-                                            size: 12, color: Colors.white))),
-                          ]))))),
+          SizedBox(width: 56, height: 56, child: ClipOval(child: image)),
           const SizedBox(width: 12),
           Expanded(
               child: Column(

@@ -6,11 +6,11 @@ O teto é a configuração mensal atual da conta, não um histórico de tetos po
 
 ## Foto
 
-Toque na foto/ícone de câmera para **Escolher imagem** ou **Usar foto da conta Google**. Sem foto, aparecem as iniciais. Falhas ao carregar a imagem também usam essa alternativa.
+Em **Ajustes**, toque na foto/ícone de câmera do cartão de perfil para **Escolher imagem** ou **Usar foto da conta Google**. Na tela inicial, a foto é apenas exibida. Sem foto, aparecem as iniciais. Falhas ao carregar a imagem também usam essa alternativa.
 
 A imagem escolhida é reduzida e reencodada em PNG antes do envio (sem metadados do arquivo original). O bucket privado `profile-avatars` limita o arquivo a 512 KB e PNG. Cada conta acessa apenas seu próprio caminho `<uid>/avatar.png`, com RLS para leitura, inserção, atualização e exclusão. Não há URL pública nem imagem incluída nos dados do token de login.
 
-A foto personalizada sincroniza ao abrir, retomar ou atualizar a tela e a cada 30 segundos com o recurso ativo. A mesma imagem aparece nos Ajustes. O cache é separado por conta e visitante. Visitantes guardam a imagem apenas no dispositivo. Trocar/restaurar a foto da conta exige conexão; falha de envio preserva a foto anterior e mostra erro. A foto original do Google não é modificada.
+A foto personalizada sincroniza ao abrir, retomar ou atualizar a tela e a cada 30 segundos com o recurso ativo. A mesma imagem aparece no painel e nos Ajustes; a troca e a restauração ficam em Ajustes. O cache é separado por conta e visitante. Visitantes também podem trocar a foto em Ajustes, mas guardam a imagem apenas no dispositivo. Trocar/restaurar a foto da conta exige conexão; falha de envio preserva a foto anterior e mostra erro. A foto original do Google não é modificada.
 
 Migração `supabase/migrations/202610100004_profile_avatars.sql` aplicada ao projeto `rdlofauxvsbdytvvmlzd` em 10/10/2026 após confirmar ausência de buckets e políticas. Não reaplicar sem conferir o esquema.
 
