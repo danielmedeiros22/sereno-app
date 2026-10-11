@@ -38,8 +38,7 @@ void main() {
         '0,00');
     expect(find.textContaining('O teto mensal é quanto'), findsOneWidget);
     expect(find.text('Defina seu teto'), findsOneWidget);
-    expect(
-        find.text('Informe um valor entre R\$ 1 e R\$ 50.000.'), findsNothing);
+    expect(find.textContaining('Informe um valor a partir de'), findsNothing);
     expect(
         tester
             .widget<FilledButton>(
@@ -101,7 +100,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  for (final value in [1.0, 50.0]) {
+  for (final value in [1.0, 50.0, 75000.25]) {
     testWidgets('confirma teto de R\$ $value', (tester) async {
       final saved = <double>[];
       await open(tester, (amount) async => saved.add(amount));

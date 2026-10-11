@@ -28,6 +28,8 @@ class MonthlyLimitService {
 
   // Zero means no limit has been configured; it is never queued for upload.
   static const defaultLimit = 0.0;
+  // Storage uses numeric(12,2); keep cents within its representable range.
+  static const maxStoredLimit = 9999999999.99;
   final String? userId;
   final MonthlyLimitRemote? remote;
   Future<MonthlyLimitRecord>? _syncing;
@@ -37,7 +39,17 @@ class MonthlyLimitService {
       : 'monthly_spending_limit:v2:user:$userId';
 
   static bool isValid(double value) =>
-      value.isFinite && value >= 1 && value <= 50000;
+      value.isFinite && value >= 1 && value <= maxStoredLimit;
+
+  static double? parseInput(String text) {
+    var normalized = text.trim().replaceAll(RegExp(r'\s'), '');
+    if (normalized.contains(',')) {
+      normalized = normalized.replaceAll('.', '').replaceAll(',', '.');
+    } else if (RegExp(r'^\d{1,3}(\.\d{3})+$').hasMatch(normalized)) {
+      normalized = normalized.replaceAll('.', '');
+    }
+    return double.tryParse(normalized);
+  }
 
   Future<MonthlyLimitRecord> read() async {
     final prefs = await SharedPreferences.getInstance();

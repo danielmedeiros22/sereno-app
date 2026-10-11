@@ -385,14 +385,21 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
                 ],
-                style: theme.textTheme.displayMedium?.copyWith(
-                    color: _activeColor, fontWeight: FontWeight.w700),
+                style: theme.textTheme.bodyLarge?.copyWith(
+                    fontSize: 32,
+                    color: _activeColor,
+                    fontWeight: FontWeight.w600),
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   hintText: '0,00',
-                  hintStyle: theme.textTheme.displayMedium?.copyWith(
+                  hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w600,
                       color:
-                          theme.colorScheme.onSurface.withValues(alpha: 0.15)),
+                          theme.colorScheme.onSurface.withValues(alpha: 0.45)),
+                  filled: false,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
                 ),

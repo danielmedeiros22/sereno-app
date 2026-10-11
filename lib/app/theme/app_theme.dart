@@ -42,6 +42,11 @@ class AppTheme {
       ),
 
       textTheme: textTheme,
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: AppColors.primary,
+        selectionColor: AppColors.primary.withValues(alpha: 0.18),
+        selectionHandleColor: AppColors.primary,
+      ),
 
       cardTheme: CardThemeData(
         color: s.surface,

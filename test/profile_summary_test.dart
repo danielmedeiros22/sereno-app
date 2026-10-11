@@ -154,9 +154,9 @@ void main() {
     expect(find.text('64% do teto utilizado', skipOffstage: false),
         findsNWidgets(2));
     expect(find.text('Referência: 05/10/2026 – 11/10/2026'), findsOneWidget);
-    await container.read(monthlyLimitProvider.notifier).save(7000);
+    await container.read(monthlyLimitProvider.notifier).save(70000);
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('32% do teto utilizado', skipOffstage: false),
+    expect(find.text('3% do teto utilizado', skipOffstage: false),
         findsNWidgets(2));
     await container.read(transactionListProvider.notifier).add(TransactionModel(
         type: 'expense',
@@ -164,7 +164,7 @@ void main() {
         category: 'Mercado',
         date: DateTime(2026, 10, 11)));
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('50% do teto utilizado', skipOffstage: false),
+    expect(find.text('5% do teto utilizado', skipOffstage: false),
         findsNWidgets(2));
     await tester.pumpWidget(const SizedBox.shrink());
     container.dispose();

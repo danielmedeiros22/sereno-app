@@ -5,15 +5,19 @@ Estado documentado em 09/10/2026. A correção está publicada em [Sereno](https
 ## Uso e valores permitidos
 
 1. Abrir **Meus limites** pelo indicador do dashboard.
-2. Digitar um valor entre **R$ 1 e R$ 50.000**, incluindo centavos com vírgula ou ponto.
+2. Digitar um valor **a partir de R$ 1**, incluindo valores acima de R$ 50.000. Exemplo: **75.000,00**. São aceitos separadores brasileiros de milhar/centavos e ponto decimal sem milhar.
 3. Selecionar **Salvar alteração** e conferir o teto atual e o novo na caixa de confirmação.
 4. Selecionar **Confirmar** para gravar. Digitar, cancelar ou fechar o rascunho não grava.
 
-R$ 1 e R$ 50 são aceitos. O mínimo anterior de R$ 100 foi removido tanto da validação Flutter quanto da restrição do banco. R$ 0,99, zero e valores negativos não são aceitos; o máximo permanece R$ 50.000.
+R$ 1 e R$ 50 são aceitos. O mínimo anterior de R$ 100 foi removido tanto da validação Flutter quanto da restrição do banco. R$ 0,99, zero e valores negativos não são aceitos como teto confirmado. O limite de R$ 50.000 foi removido. Aplicativo e banco preservam a capacidade técnica de `numeric(12,2)`, até R$ 9.999.999.999,99, com centavos; não se trata de precisão ilimitada.
 
-Sem valor salvo, o aplicativo inicia em R$ 0,00, indicando que o teto ainda não foi definido. Zero é somente o estado inicial: não é gravado nem enviado ao Supabase. A definição confirmada continua entre R$ 1 e R$ 50.000; tetos existentes, inclusive R$ 3.500, não são redefinidos. O teto é uma configuração mensal recorrente da conta, sem histórico separado por mês.
+Sem valor salvo, o aplicativo inicia em R$ 0,00, indicando que o teto ainda não foi definido. Zero é somente o estado inicial: não é gravado nem enviado ao Supabase. A definição confirmada começa em R$ 1; tetos existentes, inclusive R$ 3.500, não são redefinidos. O teto é uma configuração mensal recorrente da conta, sem histórico separado por mês.
 
 Em Meus limites, a legenda discreta explica que o teto é o valor planejado de gastos mensais, usado no termômetro e nos alertas. O campo exibe duas casas decimais, usa fonte de leitura, fundo sem preenchimento e seleção suave, evitando a sobreposição visual do estilo de títulos com o realce de seleção. Selecionar texto continua disponível no computador e no celular.
+
+A seleção suave também é aplicada aos demais campos pelo tema. Entradas/saídas usam fonte de corpo para o valor e para o exemplo `0,00`, com contraste consistente e sem fundo de foco sobreposto. Não muda o valor armazenado.
+
+`supabase/tests/monthly_limit_large_values.sql` valida R$ 75.000,25 e R$ 1.000.000,50, mínimo, timestamp do servidor e isolamento entre identidades usando uma conta existente, sempre com rollback. Nenhuma conta é criada nem valor de teste permanece. RLS e as três políticas permanecem ativos; anônimo não recebe leitura e não é concedido DELETE físico. O teste reativo dos alertas usa teto de R$ 75.000 e alteração para R$ 150.000; o teste do painel/modal usa R$ 70.000. A precisão técnica permanece a mesma no cliente e no banco.
 
 ## Persistência e sincronização
 
@@ -36,6 +40,7 @@ Projeto atual: `rdlofauxvsbdytvvmlzd`. As duas migrações abaixo já foram apli
 | --- | --- |
 | [202610090001_monthly_spending_limits.sql](../supabase/migrations/202610090001_monthly_spending_limits.sql) | Cria a tabela do teto, RLS, três políticas por usuário e trigger de timestamp. |
 | [202610090002_monthly_limit_minimum_one.sql](../supabase/migrations/202610090002_monthly_limit_minimum_one.sql) | Reduz o mínimo de R$ 100 para R$ 1, mantendo o máximo de R$ 50.000. |
+| [20261011021546_monthly_limit_above_fifty_thousand.sql](../supabase/migrations/20261011021546_monthly_limit_above_fifty_thousand.sql) | Retira o máximo de R$ 50.000, preservando tipo, registros, RLS e permissões. |
 
 A segunda migração não altera valores salvos nem políticas de acesso. A tabela tem `user_id` como chave primária vinculada a `auth.users`, `amount numeric(12,2)` e `updated_at`. Usuários autenticados podem ler, inserir e atualizar somente a própria linha; acesso anônimo é recusado.
 

@@ -286,17 +286,17 @@ void main() {
     await container.read(notificationPreferencesProvider.notifier).ready;
     final limit = container.read(monthlyLimitProvider.notifier);
     await limit.ready;
-    await limit.save(100);
+    await limit.save(75000);
     final transactions = container.read(transactionListProvider.notifier);
     await transactions.load();
     final budgets = container.read(budgetListProvider.notifier);
-    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 100));
+    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 75000));
     await budgets.synchronize();
     await container.read(recurringListProvider.notifier).load();
     await transactions.add(TransactionModel(
         id: 'expense',
         type: 'expense',
-        amount: 90,
+        amount: 67500,
         category: ' Café ',
         date: now));
     await transactions.add(TransactionModel(
@@ -307,8 +307,8 @@ void main() {
         date: now));
     await container.read(notificationPaymentsProvider.future);
     await container.pump();
-    expect(container.read(categorySpentProvider).requireValue['café'], 90);
-    expect(container.read(monthTotalsProvider).requireValue['expense'], 90);
+    expect(container.read(categorySpentProvider).requireValue['café'], 67500);
+    expect(container.read(monthTotalsProvider).requireValue['expense'], 67500);
     expect(container.read(serenoAlertsProvider).requireValue, hasLength(2));
     container.read(summaryPeriodTypeProvider.notifier).state =
         SummaryPeriodType.day;
@@ -316,15 +316,15 @@ void main() {
         DateTime(now.year, now.month, now.day - 1);
     expect(container.read(monthTotalsProvider).requireValue['expense'], 0);
     expect(container.read(serenoAlertsProvider).requireValue, hasLength(2));
-    await limit.save(200);
+    await limit.save(150000);
     await container.pump();
     expect(container.read(serenoAlertsProvider).requireValue.single.type,
         SerenoAlertType.budget);
-    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 200));
+    await budgets.add(BudgetModel(id: 'cafe', category: 'CAFÉ', limit: 150000));
     await budgets.synchronize();
     await container.pump();
     expect(container.read(serenoAlertsProvider).requireValue, isEmpty);
-    await limit.save(100);
+    await limit.save(75000);
     await transactions.remove('expense');
     await container.pump();
     expect(container.read(categorySpentProvider).requireValue, isEmpty);

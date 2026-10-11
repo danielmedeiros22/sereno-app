@@ -92,7 +92,7 @@ class AuthController {
   }
 
   Future<void> signOut() async {
-    await SupabaseService.auth.signOut();
+    await SupabaseService.auth.signOut(scope: SignOutScope.local);
     try {
       await GoogleSignIn().signOut();
     } catch (_) {}

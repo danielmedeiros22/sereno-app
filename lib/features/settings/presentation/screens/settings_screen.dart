@@ -112,6 +112,14 @@ class SettingsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => _signOut(context, ref),
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Sair da conta'),
+              ),
+            ),
           ],
           const SizedBox(height: 24),
           ListTile(
@@ -171,14 +179,6 @@ class SettingsScreen extends ConsumerWidget {
                 ref.read(isGuestProvider.notifier).state = false;
                 if (context.mounted) context.go('/welcome');
               },
-            )
-          else
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Sair', style: TextStyle(color: Colors.red)),
-              onTap: () async {
-                await ref.read(authControllerProvider).signOut();
-              },
             ),
         ],
       ),
@@ -193,6 +193,17 @@ class SettingsScreen extends ConsumerWidget {
         return 'Escuro';
       case ThemeMode.system:
         return 'Segue o sistema';
+    }
+  }
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(authControllerProvider).signOut();
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Não foi possível sair da conta. Tente novamente.')));
+      }
     }
   }
 

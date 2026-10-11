@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../providers/monthly_limit_provider.dart';
+import '../../data/monthly_limit_service.dart';
 import 'termometro_orb.dart';
 import 'segmented_limit_progress.dart';
 
@@ -50,10 +51,9 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
       value.toStringAsFixed(2).replaceAll('.', ',');
 
   double? get _draft {
-    final value =
-        double.tryParse(_textController.text.trim().replaceAll(',', '.'));
+    final value = MonthlyLimitService.parseInput(_textController.text);
     if (value == 0 && _savedLimit == 0) return 0;
-    if (value == null || !value.isFinite || value < 1 || value > 50000) {
+    if (value == null || !MonthlyLimitService.isValid(value)) {
       return null;
     }
     return (value * 100).round() / 100;
@@ -215,7 +215,8 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
                 'O teto mensal é quanto você planeja gastar por mês. Defina um valor para acompanhar seus gastos no termômetro e receber alertas.',
                 style: theme.textTheme.bodySmall),
             if (_draft == null)
-              const Text('Informe um valor entre R\$ 1 e R\$ 50.000.'),
+              const Text(
+                  'Informe um valor a partir de R\$ 1. Por exemplo: 75.000,00.'),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _saving || _draft == null || _draft == _savedLimit

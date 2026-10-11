@@ -28,7 +28,7 @@ void main() {
     final guest = MonthlyLimitService();
     final remote = FakeRemote();
     final account = MonthlyLimitService(userId: 'a', remote: remote);
-    for (final value in [1.0, 50.0, 99.5]) {
+    for (final value in [1.0, 50.0, 99.5, 75000.25, 1000000.5]) {
       await guest.save(value);
       expect(await MonthlyLimitService().load(), value);
       await account.save(value);
@@ -36,6 +36,17 @@ void main() {
       expect(remote.values['a'], value);
       expect((await account.read()).pending, isFalse);
     }
+  });
+
+  test('interpreta valores brasileiros e respeita a capacidade monetária', () {
+    expect(MonthlyLimitService.parseInput('75.000,25'), 75000.25);
+    expect(MonthlyLimitService.parseInput('75.000'), 75000);
+    expect(MonthlyLimitService.parseInput('75000.25'), 75000.25);
+    expect(MonthlyLimitService.parseInput('1,2,3'), isNull);
+    expect(
+        MonthlyLimitService.isValid(MonthlyLimitService.maxStoredLimit), true);
+    expect(MonthlyLimitService.isValid(10000000000), false);
+    expect(MonthlyLimitService.isValid(double.infinity), false);
   });
 
   test('visitante e contas diferentes não compartilham o teto', () async {
