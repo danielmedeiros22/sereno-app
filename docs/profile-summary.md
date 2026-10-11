@@ -1,5 +1,11 @@
 # Cartão Minhas finanças
 
+## Aparência do aplicativo instalado
+
+Na Web, o fundo de `html`/`body` e a cor informada ao navegador acompanham o tema efetivo do Sereno (claro, escuro ou sistema), inclusive após carregar a preferência salva ou alterá-la em Ajustes. O manifesto usa o fundo escuro do Sereno na abertura. A configuração Apple mantém o conteúdo abaixo da barra de status, sem modo translúcido nem espaçamento adicional sobre o `SafeArea` existente. Isso evita o fundo branco padrão por trás da interface escura; efeitos específicos do iOS precisam de confirmação no aparelho.
+
+Após uma atualização, feche completamente o aplicativo aberto pelo ícone e abra novamente. A aparência da barra de status pode depender das configurações guardadas pelo iOS na instalação; se persistir, verifique primeiro a versão carregada. Evite remover o aplicativo sem proteger os dados de visitante, que são locais.
+
 O botão **+** do painel responde ao clique com uma animação de 220 ms: encolhe levemente, retorna com um pequeno impulso e gira o ícone antes de abrir **Nova movimentação**. Cliques repetidos durante a abertura não duplicam o formulário. Quando a preferência de acessibilidade solicita animações reduzidas, o formulário abre diretamente.
 
 O cartão da tela inicial mostra a foto, o nome da conta, o período consultado, a quantidade de lançamentos e uma barra de dez segmentos com o percentual do teto utilizado. Escolha **Dia**, **Semana** ou **Mês** e toque na data para consultar outro período. O padrão é o mês atual; a semana vai de segunda a domingo, inclusive quando atravessa meses ou anos. O calendário usa português brasileiro. Saldo, entradas, saídas, lista, contagem e barras usam a mesma seleção e as datas locais do dispositivo.
