@@ -24,6 +24,8 @@ A leitura ocorre ao abrir, retomar ou atualizar o painel e a cada 30 segundos en
 
 ## Teto e gastos
 
+Na Web, `web/index.html` mantém invisíveis os caracteres selecionados da camada HTML de edição do Flutter (`.flt-text-editing`). O texto, o cursor e o destaque visíveis continuam desenhados pelo Flutter. Isso evita a aparência de números sobrepostos ao selecionar valores; a mesma regra atende entradas, saídas, orçamentos e recorrências, sem mudar os valores ou a sincronização. Aplicativos nativos não usam esse CSS.
+
 A barra e o termômetro usam os mesmos totais reativos dos lançamentos do período e o mesmo provider do teto mensal. **Ver meus limites** abre a configuração existente, com confirmação antes de gravar e indicação do período consultado. A tela aberta acompanha mudanças nos gastos. Digitar um teto mostra uma prévia na tela de limites; o cartão usa o teto salvo até a confirmação.
 
 A barra usa dez segmentos com preenchimento parcial para precisão. Acima de 100%, fica cheia e o texto conserva o percentual real. As cores seguem as faixas do termômetro. Ela tem descrição acessível para leitores de tela.

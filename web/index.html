@@ -32,6 +32,23 @@
 
   <title>sereno_app</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    /* Flutter paints text and selection on its canvas. Keep the native editing
+       layer invisible, including selected glyphs, to avoid a second rendering. */
+    flutter-view input.flt-text-editing::selection,
+    flutter-view textarea.flt-text-editing::selection {
+      color: transparent !important;
+      -webkit-text-fill-color: transparent !important;
+      background-color: transparent !important;
+      text-shadow: none !important;
+    }
+    flutter-view input.flt-text-editing::-moz-selection,
+    flutter-view textarea.flt-text-editing::-moz-selection {
+      color: transparent !important;
+      background-color: transparent !important;
+      text-shadow: none !important;
+    }
+  </style>
 </head>
 <body>
   <!--
