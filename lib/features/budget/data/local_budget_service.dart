@@ -1,34 +1,28 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/services/account_record_store.dart';
+import '../../transactions/data/default_categories.dart';
 import 'budget_model.dart';
 
 class LocalBudgetService {
-  static const _key = 'local_budgets';
-
-  Future<List<BudgetModel>> getAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString(_key);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List;
-    return list.map((e) => BudgetModel.fromJson(e)).toList()
-      ..sort((a, b) => a.category.compareTo(b.category));
-  }
-
+  LocalBudgetService({String? owner, AccountRecordRemote? remote})
+      : store = AccountRecordStore(
+            kind: 'budget',
+            guestKey: 'local_budgets',
+            owner: owner,
+            remote: remote);
+  final AccountRecordStore store;
+  Future<List<BudgetModel>> getAll() async =>
+      (await store.getAll()).map(BudgetModel.fromJson).toList()
+        ..sort((a, b) => a.category.compareTo(b.category));
   Future<void> add(BudgetModel budget) async {
-    final all = await getAll();
-    all.removeWhere((b) => b.category == budget.category);
-    all.add(budget);
-    await _save(all);
+    final row = budget.toJson();
+    final existing = (await getAll()).where(
+        (b) => categoryNameKey(b.category) == categoryNameKey(budget.category));
+    row['id'] = existing.isEmpty
+        ? 'category:${categoryNameKey(budget.category)}'
+        : existing.first.id;
+    await store.save(row);
   }
 
-  Future<void> delete(String id) async {
-    final all = await getAll();
-    all.removeWhere((b) => b.id == id);
-    await _save(all);
-  }
-
-  Future<void> _save(List<BudgetModel> list) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_key, jsonEncode(list.map((e) => e.toJson()).toList()));
-  }
+  Future<void> delete(String id) => store.delete(id);
+  Future<void> synchronize() => store.synchronize();
 }

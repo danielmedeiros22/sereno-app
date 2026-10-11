@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../transactions/data/default_categories.dart';
+import '../../../transactions/presentation/widgets/category_picker.dart';
 import '../../data/budget_model.dart';
 import '../providers/budget_provider.dart';
 
@@ -18,7 +19,8 @@ class _BudgetFormScreenState extends ConsumerState<BudgetFormScreen> {
   final _amountController = TextEditingController();
   CategoryItem? _selectedCategory;
 
-  final _categories = defaultCategories.where((c) => c.type == 'expense').toList();
+  final _categories =
+      defaultCategories.where((c) => c.type == 'expense').toList();
 
   @override
   void initState() {
@@ -71,7 +73,8 @@ class _BudgetFormScreenState extends ConsumerState<BudgetFormScreen> {
           TextButton(
             onPressed: _save,
             child: const Text('Salvar',
-                style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                style: TextStyle(
+                    color: AppColors.primary, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -82,60 +85,35 @@ class _BudgetFormScreenState extends ConsumerState<BudgetFormScreen> {
           children: [
             Text('Categoria', style: theme.textTheme.labelMedium),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _categories.map((cat) {
-                final active = _selectedCategory?.name == cat.name;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedCategory = cat),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: active ? AppColors.primary.withValues(alpha: 0.15) : theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: active ? AppColors.primary : theme.colorScheme.outline,
-                        width: active ? 1.5 : 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(cat.icon, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 6),
-                        Text(
-                          cat.name,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: active ? AppColors.primary : theme.colorScheme.onSurface,
-                            fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+            CategoryPicker(
+                type: 'expense',
+                selected: _selectedCategory,
+                onChanged: (category) =>
+                    setState(() => _selectedCategory = category)),
             const SizedBox(height: 32),
             Text('Teto mensal', style: theme.textTheme.labelMedium),
             const SizedBox(height: 12),
             Row(
               children: [
-                Text('R\$', style: theme.textTheme.headlineSmall?.copyWith(color: AppColors.primary)),
+                Text('R\$',
+                    style: theme.textTheme.headlineSmall
+                        ?.copyWith(color: AppColors.primary)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextField(
                     controller: _amountController,
                     autofocus: true,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))],
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[\d.,]'))
+                    ],
                     style: theme.textTheme.headlineSmall?.copyWith(
                         color: AppColors.primary, fontWeight: FontWeight.w600),
                     decoration: InputDecoration(
                       hintText: '0,00',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14)),
                       filled: true,
                       fillColor: theme.colorScheme.surface,
                     ),

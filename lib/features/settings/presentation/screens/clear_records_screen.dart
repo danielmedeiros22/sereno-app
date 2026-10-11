@@ -65,6 +65,7 @@ class _ClearRecordsScreenState extends ConsumerState<ClearRecordsScreen> {
             .toList();
       }
       if (selected.contains('recurring')) {
+        await ref.read(localRecurringServiceProvider).synchronize();
         recurring = (await ref.read(localRecurringServiceProvider).getAll())
             .where((row) => period.contains(row.createdAt))
             .toList();
@@ -93,7 +94,7 @@ class _ClearRecordsScreenState extends ConsumerState<ClearRecordsScreen> {
               'Período: $_periodLabel\n$summary\n\nTotal: $total registros.',
           scope: owner == null
               ? 'A exclusão afeta os dados deste dispositivo.'
-              : 'Entradas e saídas serão excluídas da conta e dos outros dispositivos ao sincronizar. Diário e contas recorrentes serão excluídos somente deste dispositivo.',
+              : 'Entradas, saídas e contas recorrentes serão excluídas da conta e dos outros dispositivos ao sincronizar. O diário será excluído somente deste dispositivo.',
         ),
       );
       if (!mounted) return;
@@ -117,15 +118,21 @@ class _ClearRecordsScreenState extends ConsumerState<ClearRecordsScreen> {
       }
       if (!mounted || owner != ref.read(transactionOwnerProvider)) return;
       if (recurring.isNotEmpty) {
-        deleted += await LocalRecordDeletion.recurring(
-            recurring.map((row) => row.toJson()).toList());
-        await ref.read(recurringListProvider.notifier).load();
+        deleted += await ref
+            .read(recurringListProvider.notifier)
+            .deleteReviewed(recurring);
       }
       if (!mounted) return;
-      final pending = transactions.isNotEmpty &&
-          ref.read(transactionSyncStatusProvider) !=
-              TransactionSyncStatus.synced &&
-          owner != null;
+      final pending = owner != null &&
+          ((transactions.isNotEmpty &&
+                  ref.read(transactionSyncStatusProvider) !=
+                      TransactionSyncStatus.synced) ||
+              (recurring.isNotEmpty &&
+                  await ref
+                          .read(localRecurringServiceProvider)
+                          .store
+                          .pendingCount() >
+                      0));
       _message('$deleted registros excluídos.'
           '${deleted < total ? ' Registros alterados após a revisão foram preservados.' : ''}'
           '${pending ? ' A exclusão da conta aguarda sincronização.' : ''}');
@@ -159,7 +166,7 @@ class _ClearRecordsScreenState extends ConsumerState<ClearRecordsScreen> {
               style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           const Text(
-              'Escolha o que excluir. Tema, login, teto mensal e orçamentos por categoria serão mantidos.'),
+              'Escolha o que excluir. Tema, login, categorias, teto mensal e orçamentos por categoria serão mantidos.'),
           CheckboxListTile(
             title: const Text('Selecionar tudo'),
             value: _selected.length == _labels.length,

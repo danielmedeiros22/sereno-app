@@ -28,7 +28,7 @@ Procedimento para futuras instalações:
 4. Acrescentar `TRANSACTION_CLOUD_SYNC=true` ao `.env` público do cliente, preservando os parâmetros anteriores. Sem essa opção, o acesso remoto fica desativado.
 5. Gerar uma prévia, validar com a mesma conta em duas sessões e somente então integrar/publicar com autorização. Alterações em `main` publicam automaticamente.
 
-O recurso cobre **entradas e saídas**. Diário, orçamentos por categoria, recorrências e espaços compartilhados não passam a sincronizar por esta entrega. Não é necessário ativar faturamento do Google Cloud para autenticação.
+Esta entrega original cobre **entradas e saídas**. Na atualização de 10/10/2026, categorias personalizadas, orçamentos e recorrências também receberam sincronização: consulte [categorias e registros relacionados](custom-categories.md). Diário e espaços compartilhados permanecem fora desses fluxos. Não é necessário ativar faturamento do Google Cloud para autenticação.
 
 ## Verificações locais
 

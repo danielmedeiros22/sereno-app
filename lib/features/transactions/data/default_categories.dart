@@ -3,8 +3,19 @@ class CategoryItem {
   final String icon;
   final String type;
 
-  const CategoryItem({required this.name, required this.icon, required this.type});
+  const CategoryItem(
+      {required this.name, required this.icon, required this.type});
+
+  String get key => '$type:${categoryNameKey(name)}';
+  Map<String, dynamic> toJson() => {'name': name, 'icon': icon, 'type': type};
+  factory CategoryItem.fromJson(Map<String, dynamic> json) => CategoryItem(
+      name: json['name'] as String,
+      icon: json['icon'] as String,
+      type: json['type'] as String);
 }
+
+String categoryNameKey(String value) =>
+    value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
 const defaultCategories = <CategoryItem>[
   CategoryItem(name: 'Alimentação', icon: '🍽️', type: 'expense'),

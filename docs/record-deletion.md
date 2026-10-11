@@ -12,7 +12,8 @@ Os calendários do aplicativo usam português brasileiro (pt-BR), incluindo mese
 
 - Entradas e saídas pertencem à conta atual ou ao modo visitante. Para contas com sincronização ativa, a revisão exige uma leitura remota bem-sucedida. Sem conexão, nenhuma categoria daquela operação é excluída antes da revisão.
 - A exclusão de lançamentos da conta se propaga aos demais dispositivos por marcadores de exclusão, utilizando as regras de acesso já existentes. Não exige migração nem DELETE físico no Supabase. Se a conexão cair após confirmar, a pendência fica gravada localmente para o próximo envio.
-- Diário e recorrências são locais ao navegador/dispositivo, conforme a arquitetura atual, e não são separados por conta. A confirmação informa esse alcance. Suas exclusões não se propagam a outro aparelho.
+- Recorrências da conta agora sincronizam a exclusão, inclusive a remoção das marcações de pagamento armazenadas no novo fluxo. A revisão exige leitura remota bem-sucedida. Dados antigos de recorrências permanecem locais até a importação confirmada. Consulte [categorias e registros sincronizados](custom-categories.md).
+- Diário continua local ao navegador/dispositivo e não é separado por conta. A confirmação informa esse alcance; sua exclusão não se propaga a outro aparelho.
 - Dados de visitantes, outras contas e cópias antigas sem dono não são apagados pela limpeza dos lançamentos da conta atual. Os IDs excluídos não podem ser reimportados sobre os marcadores da mesma conta.
 - A operação considera somente os registros exibidos na revisão. Novos registros e registros alterados entre a revisão e a gravação local são preservados. Cada categoria é persistida em uma gravação; não há transação única entre categorias. Em falha parcial, a mensagem informa as exclusões concluídas e pede uma nova revisão.
 

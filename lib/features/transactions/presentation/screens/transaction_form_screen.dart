@@ -8,6 +8,7 @@ import '../../../../core/services/location_service.dart';
 import '../../data/default_categories.dart';
 import '../../data/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import '../widgets/category_picker.dart';
 import '../../../../core/services/map_picker_screen.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
@@ -173,8 +174,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               decoration: InputDecoration(
                 labelText: 'Descrição (opcional)',
                 hintText: 'Ex: Almoço no restaurante',
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 filled: true,
                 fillColor: theme.colorScheme.surface,
               ),
@@ -209,10 +210,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               const SizedBox(width: 12),
               Text('Localização desativada',
                   style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.4))),
               const Spacer(),
               Text('Ativar',
-                  style: theme.textTheme.bodySmall?.copyWith(color: _activeColor)),
+                  style:
+                      theme.textTheme.bodySmall?.copyWith(color: _activeColor)),
             ],
           ),
         ),
@@ -247,7 +250,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                     const SizedBox(width: 8),
                     Text('Buscando localização...',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5))),
                   ])
                 : _location != null
                     ? GestureDetector(
@@ -265,7 +269,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                       )
                     : Text('Localização indisponível',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.4))),
           ),
           IconButton(
             onPressed: () => setState(() {
@@ -292,15 +297,20 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       ),
       child: Row(
         children: [
-          Expanded(child: _typeButton('expense', 'Saída', Icons.arrow_downward, theme)),
+          Expanded(
+              child:
+                  _typeButton('expense', 'Saída', Icons.arrow_downward, theme)),
           const SizedBox(width: 4),
-          Expanded(child: _typeButton('income', 'Entrada', Icons.arrow_upward, theme)),
+          Expanded(
+              child:
+                  _typeButton('income', 'Entrada', Icons.arrow_upward, theme)),
         ],
       ),
     );
   }
 
-  Widget _typeButton(String type, String label, IconData icon, ThemeData theme) {
+  Widget _typeButton(
+      String type, String label, IconData icon, ThemeData theme) {
     final active = _type == type;
     final color = type == 'income' ? AppColors.income : AppColors.expense;
 
@@ -317,17 +327,24 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         decoration: BoxDecoration(
           color: active ? color.withValues(alpha: 0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: active ? Border.all(color: color.withValues(alpha: 0.4)) : null,
+          border:
+              active ? Border.all(color: color.withValues(alpha: 0.4)) : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: active ? color : theme.colorScheme.onSurface.withValues(alpha: 0.4)),
+            Icon(icon,
+                size: 18,
+                color: active
+                    ? color
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.4)),
             const SizedBox(width: 8),
             Text(
               label,
               style: theme.textTheme.titleSmall?.copyWith(
-                color: active ? color : theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                color: active
+                    ? color
+                    : theme.colorScheme.onSurface.withValues(alpha: 0.4),
                 fontWeight: active ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -354,7 +371,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text('R\$',
-                  style: theme.textTheme.headlineMedium?.copyWith(color: _activeColor)),
+                  style: theme.textTheme.headlineMedium
+                      ?.copyWith(color: _activeColor)),
             ),
             const SizedBox(width: 8),
             SizedBox(
@@ -362,7 +380,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               child: TextField(
                 controller: _amountController,
                 autofocus: true,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'[\d.,]')),
                 ],
@@ -372,7 +391,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                 decoration: InputDecoration(
                   hintText: '0,00',
                   hintStyle: theme.textTheme.displayMedium?.copyWith(
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.15)),
+                      color:
+                          theme.colorScheme.onSurface.withValues(alpha: 0.15)),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -413,44 +433,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     );
   }
 
-  Widget _buildCategoryGrid(ThemeData theme) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: _filteredCategories.map((cat) {
-        final active = _selectedCategory?.name == cat.name;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedCategory = cat),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: active
-                  ? _activeColor.withValues(alpha: 0.15)
-                  : theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: active ? _activeColor : theme.colorScheme.outline,
-                width: active ? 1.5 : 1,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(cat.icon, style: const TextStyle(fontSize: 16)),
-                const SizedBox(width: 6),
-                Text(
-                  cat.name,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: active ? _activeColor : theme.colorScheme.onSurface,
-                    fontWeight: active ? FontWeight.w600 : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
+  Widget _buildCategoryGrid(ThemeData theme) => CategoryPicker(
+      type: _type,
+      selected: _selectedCategory,
+      onChanged: (category) => setState(() => _selectedCategory = category));
 }

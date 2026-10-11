@@ -34,7 +34,11 @@ A correção está publicada em [sereno-app-beta.vercel.app](https://sereno-app-
 
 A branch `main` reúne o código e a documentação integrados pelo [PR #1](https://github.com/danielmedeiros22/sereno-app/pull/1). A Vercel compila, testa e publica automaticamente os commits enviados à `main`; outras branches geram prévias. Consulte [a documentação técnica do teto mensal](docs/monthly-limit-sync.md) para migrações, sincronização, testes e referência do deploy.
 
-## O que já funciona
+## Categorias personalizadas e sincronização — 10/10/2026
+
+Use **Adicionar categoria** nos formulários de orçamento, movimentação e conta recorrente. Escolha o emoji pelo teclado do Android/iOS, cole na Web ou use as sugestões. A categoria é compartilhada entre os seletores do mesmo tipo, e nome/emoji acompanham os registros.
+
+Contas autenticadas sincronizam **categorias, lançamentos, orçamentos e recorrências**, incluindo pagamentos das recorrências. Alterações offline ficam pendentes; visitantes continuam locais. Orçamentos/recorrências antigos do dispositivo podem ser copiados para a conta com **Importar dados antigos**, após confirmação. Consulte [funcionamento, segurança e validação](docs/custom-categories.md).
 
 ## O que já funciona
 
@@ -43,7 +47,7 @@ A branch `main` reúne o código e a documentação integrados pelo [PR #1](http
 - **Dashboard** — saldo atual, entradas/saídas do mês, orbe do Termômetro
 - **Termômetro Sereno** — orbe animada que muda cor e expressão conforme os gastos (5 estados)
 - **Formulário de transações** — registre entradas e saídas com valor, categoria, data e descrição
-- **22 categorias com emojis** — 15 de despesa e 7 de receita
+- **Categorias com emojis** — 22 categorias padrão e categorias personalizadas compartilhadas entre os formulários
 - **Lista de movimentações** — agrupada por data (Hoje, Ontem, etc), swipe pra deletar
 - **Saldo calculado automaticamente** — entradas − saídas do mês
 - **GPS automático** — captura localização ao registrar transação (reverse geocoding via Nominatim)
@@ -57,7 +61,7 @@ A branch `main` reúne o código e a documentação integrados pelo [PR #1](http
 - **Sessão persistida** — não desloga ao fechar o app
 - **Deploy web** — acessível em qualquer navegador via Vercel
 - **Banco de dados** — Supabase (Postgres) com Row Level Security
-- **Sync offline** — fila de sincronização automática com Supabase ao voltar online
+- **Sync offline** — fila automática para lançamentos, teto, categorias, orçamentos e recorrências ao voltar online; diário permanece local
 - **Indicador de sync** — mostra status no dashboard (sincronizando, pendente, erro, sincronizado)
 - **Detecção automática de rede** — connectivity_plus monitora e sincroniza quando volta online
 
@@ -75,7 +79,7 @@ O V1 do Sereno está completo com tudo funcionando na web:
 
 ✅ Login (Google, Apple, Visitante)
 ✅ Dashboard com Termômetro Sereno
-✅ CRUD de transações com 22 categorias
+✅ CRUD de transações com categorias padrão e personalizadas
 ✅ GPS automático + mapa com pin
 ✅ Contas recorrentes
 ✅ Diário financeiro
@@ -197,7 +201,7 @@ lib/
 
 ### Referência do login Google do Sereno
 
-> **Sincronização por conta:** entradas, saídas e teto mensal usam o Supabase. Entre com a mesma conta nos dispositivos e confirme a importação dos lançamentos antigos em cada um deles. Consulte [Sincronização dos lançamentos](docs/transaction-sync.md) para funcionamento, validação e limites do recurso.
+> **Sincronização por conta:** entradas, saídas, teto mensal, categorias personalizadas, orçamentos e recorrências usam o Supabase. Entre com a mesma conta nos dispositivos e confirme a importação dos registros antigos que deseja aproveitar em cada um deles. Consulte [sincronização dos lançamentos](docs/transaction-sync.md) e [categorias e registros relacionados](docs/custom-categories.md).
 
 > **Conta Google com acesso confirmado: `danyellmedeiros22@gmail.com` (Danyell Medeiros).**
 > O projeto existente é **App financeiro**. Use essa conta e esse projeto para consultar a configuração OAuth do Sereno.
@@ -264,11 +268,11 @@ O diretório publicado é somente `build/web`. O asset `assets/.env` contém par
 
 ## Cartão Minhas finanças
 
-Na tela inicial, o cartão mostra a foto da conta (com opção de trocar ou restaurar), o mês selecionado, a quantidade de lançamentos e uma barra segmentada de uso do teto. A foto personalizada é privada e sincroniza pela conta. Saldo, movimentações, barra e **Meus limites** compartilham o mês e os valores atualizados. Veja [foto, privacidade e funcionamento](docs/profile-summary.md).
+Na tela inicial, o cartão mostra a foto da conta (com opção de trocar ou restaurar), o período selecionado (Dia/Semana/Mês), a quantidade de lançamentos e uma barra segmentada de uso do teto mensal. A foto personalizada é privada e sincroniza pela conta. Saldo, movimentações, barra e **Meus limites** compartilham o período e os valores atualizados. Veja [foto, privacidade e funcionamento](docs/profile-summary.md).
 
 ## Limpeza de registros
 
-Em **Ajustes → Limpar registros**, escolha entradas, saídas, diário, contas recorrentes ou selecione tudo, por dia, mês, ano ou todo o histórico. A revisão mostra as quantidades; excluir exige autorização marcada e a palavra **EXCLUIR**. A ação não pode ser desfeita no aplicativo. Lançamentos da conta sincronizam a exclusão; diário e recorrências são locais ao dispositivo. Tema, login, teto mensal e orçamentos por categoria são preservados. Veja [alcance dos filtros e confirmação](docs/record-deletion.md).
+Em **Ajustes → Limpar registros**, escolha entradas, saídas, diário, contas recorrentes ou selecione tudo, por dia, mês, ano ou todo o histórico. A revisão mostra as quantidades; excluir exige autorização marcada e a palavra **EXCLUIR**. A ação não pode ser desfeita no aplicativo. Lançamentos e recorrências da conta sincronizam a exclusão; diário permanece local. Tema, login, categorias, teto mensal e orçamentos são preservados. Veja [alcance dos filtros e confirmação](docs/record-deletion.md).
 
 ## Termômetro Sereno
 

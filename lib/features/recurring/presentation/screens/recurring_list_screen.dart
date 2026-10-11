@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../providers/recurring_provider.dart';
 import 'recurring_form_screen.dart';
+import '../../../transactions/presentation/widgets/financial_sync_banner.dart';
 
 class RecurringListScreen extends ConsumerWidget {
   const RecurringListScreen({super.key});
@@ -19,6 +20,9 @@ class RecurringListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(80),
+            child: FinancialSyncBanner(kind: 'recurring')),
         title: const Text('Contas recorrentes'),
         actions: [
           IconButton(
@@ -41,21 +45,26 @@ class RecurringListScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.repeat, size: 64,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+                    Icon(Icons.repeat,
+                        size: 64,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                     const SizedBox(height: 16),
                     Text('Nenhuma conta recorrente',
                         style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5))),
                     const SizedBox(height: 8),
                     Text('Adicione aluguel, internet, assinaturas...',
                         style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.3))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.3))),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const RecurringFormScreen()),
+                        MaterialPageRoute(
+                            builder: (_) => const RecurringFormScreen()),
                       ),
                       icon: const Icon(Icons.add),
                       label: const Text('Adicionar conta'),
@@ -113,11 +122,9 @@ class RecurringListScreen extends ConsumerWidget {
                       // Checkbox pagar
                       GestureDetector(
                         onTap: () async {
-                          if (isPaid) {
-                            await service.unmarkPaid(item.id, monthKey);
-                          } else {
-                            await service.markPaid(item.id, monthKey);
-                          }
+                          await ref
+                              .read(recurringListProvider.notifier)
+                              .setPaid(item.id, monthKey, !isPaid);
                           ref.invalidate(paidIdsProvider);
                         },
                         child: Container(
@@ -129,18 +136,22 @@ class RecurringListScreen extends ConsumerWidget {
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isPaid ? AppColors.income : theme.colorScheme.outline,
+                              color: isPaid
+                                  ? AppColors.income
+                                  : theme.colorScheme.outline,
                               width: 2,
                             ),
                           ),
                           child: isPaid
-                              ? const Icon(Icons.check, size: 16, color: AppColors.income)
+                              ? const Icon(Icons.check,
+                                  size: 16, color: AppColors.income)
                               : null,
                         ),
                       ),
                       const SizedBox(width: 14),
                       // Ícone
-                      Text(item.categoryIcon ?? '📦', style: const TextStyle(fontSize: 22)),
+                      Text(item.categoryIcon ?? '📦',
+                          style: const TextStyle(fontSize: 22)),
                       const SizedBox(width: 14),
                       // Info
                       Expanded(
@@ -150,9 +161,11 @@ class RecurringListScreen extends ConsumerWidget {
                             Text(
                               item.name,
                               style: theme.textTheme.titleSmall?.copyWith(
-                                decoration: isPaid ? TextDecoration.lineThrough : null,
+                                decoration:
+                                    isPaid ? TextDecoration.lineThrough : null,
                                 color: isPaid
-                                    ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                                    ? theme.colorScheme.onSurface
+                                        .withValues(alpha: 0.4)
                                     : null,
                               ),
                             ),
@@ -172,7 +185,8 @@ class RecurringListScreen extends ConsumerWidget {
                                         ? AppColors.expense
                                         : daysLeft <= 3
                                             ? AppColors.alert
-                                            : theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                            : theme.colorScheme.onSurface
+                                                .withValues(alpha: 0.5),
                               ),
                             ),
                           ],
@@ -186,7 +200,8 @@ class RecurringListScreen extends ConsumerWidget {
                             currency.format(item.amount),
                             style: theme.textTheme.titleSmall?.copyWith(
                               color: isPaid
-                                  ? theme.colorScheme.onSurface.withValues(alpha: 0.4)
+                                  ? theme.colorScheme.onSurface
+                                      .withValues(alpha: 0.4)
                                   : AppColors.expense,
                               fontWeight: FontWeight.w600,
                             ),
@@ -194,7 +209,8 @@ class RecurringListScreen extends ConsumerWidget {
                           Text(
                             item.frequencyLabel,
                             style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.4),
                                 fontSize: 10),
                           ),
                         ],

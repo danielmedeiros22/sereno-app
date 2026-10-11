@@ -34,6 +34,7 @@ migrate_working_dir/
 /coverage/
 .flutter-sdk/
 .vercel/
+/supabase/.temp/
 .env.local
 .env.*.local
 

@@ -19,6 +19,10 @@ import '../../data/monthly_limit_service.dart';
 import '../providers/monthly_limit_provider.dart';
 import '../providers/avatar_provider.dart';
 import '../widgets/profile_summary_card.dart';
+import '../../../transactions/presentation/providers/category_provider.dart';
+import '../../../budget/presentation/providers/budget_provider.dart';
+import '../../../recurring/presentation/providers/recurring_provider.dart';
+import '../../../../core/services/financial_record_sync_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -49,6 +53,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       ref.read(monthlyLimitProvider.notifier).synchronize();
       ref.read(transactionListProvider.notifier).synchronize();
       ref.read(avatarProvider.notifier).synchronize();
+      ref.read(categoryListProvider.notifier).synchronize();
+      ref.read(budgetListProvider.notifier).synchronize();
+      ref.read(recurringListProvider.notifier).synchronize();
     }
   }
 
@@ -67,6 +74,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         transactions.synchronize(),
         monthlyLimit.synchronize(),
         ref.read(avatarProvider.notifier).synchronize(),
+        ref.read(categoryListProvider.notifier).synchronize(),
+        ref.read(budgetListProvider.notifier).synchronize(),
+        ref.read(recurringListProvider.notifier).synchronize(),
       ]);
       if (!mounted || owner != ref.read(transactionOwnerProvider)) return;
       final transactionStatus = ref.read(transactionSyncStatusProvider);
@@ -74,7 +84,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       final failed = transactionStatus == TransactionSyncStatus.failed ||
           ref.read(transactionListProvider).hasError ||
           limitState.hasError ||
-          limitState.valueOrNull?.syncFailed == true;
+          limitState.valueOrNull?.syncFailed == true ||
+          ref.read(categorySyncFailedProvider) ||
+          ref.read(categoryListProvider).hasError ||
+          ref.read(budgetListProvider).hasError ||
+          ref.read(recurringListProvider).hasError ||
+          ref.read(financialSyncFailedProvider('budget')) ||
+          ref.read(financialSyncFailedProvider('recurring'));
       final syncing = transactionStatus == TransactionSyncStatus.syncing ||
           limitState.valueOrNull?.syncing == true;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

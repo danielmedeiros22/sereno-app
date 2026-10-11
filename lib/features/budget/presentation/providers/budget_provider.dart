@@ -1,57 +1,56 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/services/financial_record_sync_provider.dart';
 import '../../data/local_budget_service.dart';
 import '../../data/budget_model.dart';
-import '../../../transactions/data/local_transaction_service.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 
-final localBudgetServiceProvider = Provider<LocalBudgetService>((ref) {
-  return LocalBudgetService();
-});
-
+final localBudgetServiceProvider = Provider<LocalBudgetService>((ref) =>
+    LocalBudgetService(
+        owner: ref.watch(transactionOwnerProvider),
+        remote: ref.watch(financialRecordRemoteProvider)));
 final budgetListProvider =
-    StateNotifierProvider<BudgetListNotifier, AsyncValue<List<BudgetModel>>>((ref) {
-  return BudgetListNotifier(ref.read(localBudgetServiceProvider));
+    StateNotifierProvider<BudgetListNotifier, AsyncValue<List<BudgetModel>>>(
+        (ref) {
+  final service = ref.watch(localBudgetServiceProvider);
+  final notifier = BudgetListNotifier(
+      service,
+      (failed) => ref
+          .read(financialSyncFailedProvider('budget').notifier)
+          .state = failed);
+  installFinancialSync(ref, service.store.remote, notifier.synchronize);
+  return notifier;
 });
 
-class BudgetListNotifier extends StateNotifier<AsyncValue<List<BudgetModel>>> {
-  final LocalBudgetService _service;
-
-  BudgetListNotifier(this._service) : super(const AsyncValue.loading()) {
-    load();
+class BudgetListNotifier extends FinancialListNotifier<BudgetModel> {
+  BudgetListNotifier(this.service, void Function(bool) onFailure)
+      : super(onFailure) {
+    initialize();
   }
-
-  Future<void> load() async {
-    state = const AsyncValue.loading();
-    try {
-      final list = await _service.getAll();
-      state = AsyncValue.data(list);
-    } catch (e, s) {
-      state = AsyncValue.error(e, s);
-    }
-  }
-
+  final LocalBudgetService service;
+  @override
+  Future<List<BudgetModel>> readRecords() => service.getAll();
+  @override
+  Future<void> syncRecords() => service.synchronize();
   Future<void> add(BudgetModel budget) async {
-    await _service.add(budget);
-    await load();
+    await service.add(budget);
+    await changed();
   }
 
   Future<void> remove(String id) async {
-    await _service.delete(id);
-    await load();
+    await service.delete(id);
+    await changed();
   }
 }
 
-final categorySpentProvider = FutureProvider<Map<String, double>>((ref) async {
-  ref.watch(transactionListProvider);
-  final service = LocalTransactionService();
-  final all = await service.getAll();
-  final now = DateTime.now();
-  final monthTxs = all.where((t) =>
-      t.isExpense && t.date.year == now.year && t.date.month == now.month);
-
-  final Map<String, double> spent = {};
-  for (final tx in monthTxs) {
-    spent[tx.category] = (spent[tx.category] ?? 0) + tx.amount;
-  }
-  return spent;
-});
+final categorySpentProvider = Provider<AsyncValue<Map<String, double>>>(
+    (ref) => ref.watch(transactionListProvider).whenData((all) {
+          final now = DateTime.now();
+          final spent = <String, double>{};
+          for (final tx in all.where((t) =>
+              t.isExpense &&
+              t.date.toLocal().year == now.year &&
+              t.date.toLocal().month == now.month)) {
+            spent[tx.category] = (spent[tx.category] ?? 0) + tx.amount;
+          }
+          return spent;
+        }));

@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../data/budget_model.dart';
 import '../providers/budget_provider.dart';
 import 'budget_form_screen.dart';
+import '../../../transactions/presentation/widgets/financial_sync_banner.dart';
 
 class BudgetListScreen extends ConsumerWidget {
   const BudgetListScreen({super.key});
@@ -19,6 +19,9 @@ class BudgetListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        bottom: const PreferredSize(
+            preferredSize: Size.fromHeight(80),
+            child: FinancialSyncBanner(kind: 'budget')),
         title: const Text('Orçamento por categoria'),
         actions: [
           IconButton(
@@ -41,22 +44,28 @@ class BudgetListScreen extends ConsumerWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.pie_chart_outline, size: 64,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+                    Icon(Icons.pie_chart_outline,
+                        size: 64,
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                     const SizedBox(height: 16),
                     Text('Nenhum orçamento definido',
                         style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.5))),
                     const SizedBox(height: 8),
-                    Text('Defina tetos mensais por categoria pra controlar seus gastos.',
+                    Text(
+                        'Defina tetos mensais por categoria pra controlar seus gastos.',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurface.withValues(alpha: 0.3))),
+                            color: theme.colorScheme.onSurface
+                                .withValues(alpha: 0.3))),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                       onPressed: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const BudgetFormScreen()),
+                        MaterialPageRoute(
+                            builder: (_) => const BudgetFormScreen()),
                       ),
                       icon: const Icon(Icons.add),
                       label: const Text('Definir orçamento'),
@@ -75,7 +84,8 @@ class BudgetListScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final budget = budgets[index];
               final catSpent = spent[budget.category] ?? 0;
-              final percent = budget.limit > 0 ? (catSpent / budget.limit) * 100 : 0.0;
+              final percent =
+                  budget.limit > 0 ? (catSpent / budget.limit) * 100 : 0.0;
               final color = AppColors.riskFor(percent);
 
               return Dismissible(
@@ -93,7 +103,9 @@ class BudgetListScreen extends ConsumerWidget {
                 onDismissed: (_) {
                   ref.read(budgetListProvider.notifier).remove(budget.id);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Orçamento de ${budget.category} removido')),
+                    SnackBar(
+                        content:
+                            Text('Orçamento de ${budget.category} removido')),
                   );
                 },
                 child: Container(
@@ -109,18 +121,21 @@ class BudgetListScreen extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Text(budget.categoryIcon ?? '📦', style: const TextStyle(fontSize: 22)),
+                          Text(budget.categoryIcon ?? '📦',
+                              style: const TextStyle(fontSize: 22)),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(budget.category, style: theme.textTheme.titleSmall),
+                                Text(budget.category,
+                                    style: theme.textTheme.titleSmall),
                                 const SizedBox(height: 2),
                                 Text(
                                   '${currency.format(catSpent)} de ${currency.format(budget.limit)}',
                                   style: theme.textTheme.bodySmall?.copyWith(
-                                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                                      color: theme.colorScheme.onSurface
+                                          .withValues(alpha: 0.5)),
                                 ),
                               ],
                             ),
