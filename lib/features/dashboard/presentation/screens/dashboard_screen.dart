@@ -151,6 +151,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
             SliverAppBar(
               floating: true,
               backgroundColor: theme.scaffoldBackgroundColor,
+              // Keep the scrollbar clear of the settings button's hit area.
+              actionsPadding: const EdgeInsets.only(right: 20),
               actions: [
                 IconButton(
                     tooltip: 'Notificações',
