@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../transactions/data/default_categories.dart';
 import '../../../transactions/presentation/widgets/category_picker.dart';
 import '../../data/recurring_model.dart';
+import '../../data/recurring_schedule.dart';
 import '../providers/recurring_provider.dart';
 
 class RecurringFormScreen extends ConsumerStatefulWidget {
-  const RecurringFormScreen({super.key});
+  const RecurringFormScreen({super.key, this.rule});
+  final RecurringModel? rule;
 
   @override
   ConsumerState<RecurringFormScreen> createState() =>
@@ -22,6 +25,7 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   RecurringFrequency _frequency = RecurringFrequency.monthly;
   int _dueDay = DateTime.now().day;
   CategoryItem? _selectedCategory;
+  DateTime? _firstDueDate;
 
   final _categories =
       defaultCategories.where((c) => c.type == 'expense').toList();
@@ -30,6 +34,20 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   void initState() {
     super.initState();
     _selectedCategory = _categories.first;
+    final rule = widget.rule;
+    _firstDueDate = rule?.firstDueDate ??
+        (rule == null ? calendarDay(DateTime.now()) : null);
+    if (rule != null) {
+      _nameController.text = rule.name;
+      _amountController.text =
+          rule.amount.toStringAsFixed(2).replaceAll('.', ',');
+      _frequency = rule.frequency;
+      _dueDay = rule.dueDay.clamp(1, 31);
+      _selectedCategory = CategoryItem(
+          name: rule.category,
+          icon: rule.categoryIcon ?? '📦',
+          type: 'expense');
+    }
   }
 
   @override
@@ -40,6 +58,12 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
   }
 
   Future<void> _save() async {
+    if (_frequency != RecurringFrequency.monthly && _firstDueDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text('Defina o primeiro vencimento para esta periodicidade.')));
+      return;
+    }
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Digite o nome da conta')),
@@ -61,6 +85,10 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
     }
 
     final rule = RecurringModel(
+      id: widget.rule?.id,
+      createdAt: widget.rule?.createdAt,
+      active: widget.rule?.active ?? true,
+      firstDueDate: _firstDueDate,
       name: _nameController.text.trim(),
       amount: amount,
       category: _selectedCategory!.name,
@@ -83,7 +111,9 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Nova conta recorrente'),
+        title: Text(widget.rule == null
+            ? 'Nova conta recorrente'
+            : 'Editar conta recorrente'),
         actions: [
           TextButton(
             onPressed: _save,
@@ -213,14 +243,22 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
                         value: _dueDay,
                         isExpanded: true,
                         alignment: AlignmentDirectional.centerEnd,
-                        items: List.generate(28, (i) => i + 1)
+                        items: List.generate(31, (i) => i + 1)
                             .map((d) => DropdownMenuItem(
                                   value: d,
                                   child: Text('$d', textAlign: TextAlign.right),
                                 ))
                             .toList(),
                         onChanged: (val) {
-                          if (val != null) setState(() => _dueDay = val);
+                          if (val != null) {
+                            setState(() {
+                              _dueDay = val;
+                              if (_firstDueDate != null) {
+                                _firstDueDate = clampedDay(_firstDueDate!.year,
+                                    _firstDueDate!.month, val);
+                              }
+                            });
+                          }
                         },
                       ),
                     ),
@@ -230,6 +268,29 @@ class _RecurringFormScreenState extends ConsumerState<RecurringFormScreen> {
             ),
             const SizedBox(height: 28),
             // Categoria
+            ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.event_outlined),
+                title: const Text('Primeiro vencimento'),
+                subtitle: Text(_firstDueDate == null
+                    ? 'Definir data para os lembretes'
+                    : DateFormat('dd/MM/yyyy').format(_firstDueDate!)),
+                trailing: const Icon(Icons.edit_calendar_outlined),
+                onTap: () async {
+                  final initial = _firstDueDate ?? DateTime.now();
+                  final picked = await showDatePicker(
+                      context: context,
+                      initialDate: initial,
+                      firstDate: DateTime(initial.year - 10),
+                      lastDate: DateTime(initial.year + 10, 12, 31));
+                  if (picked != null && mounted) {
+                    setState(() {
+                      _firstDueDate = picked;
+                      _dueDay = picked.day;
+                    });
+                  }
+                }),
+            const SizedBox(height: 12),
             Text('Categoria', style: theme.textTheme.labelMedium),
             const SizedBox(height: 12),
             CategoryPicker(

@@ -124,7 +124,7 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Notificações'),
             subtitle: const Text('Termômetro, contas futuras'),
-            onTap: () {},
+            onTap: () => context.push('/notifications'),
           ),
           ListTile(
             leading: const Icon(Icons.repeat),

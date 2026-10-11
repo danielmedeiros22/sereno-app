@@ -40,6 +40,12 @@ Use **Adicionar categoria** nos formulários de orçamento, movimentação e con
 
 Contas autenticadas sincronizam **categorias, lançamentos, orçamentos e recorrências**, incluindo pagamentos das recorrências. Alterações offline ficam pendentes; visitantes continuam locais. Orçamentos/recorrências antigos do dispositivo podem ser copiados para a conta com **Importar dados antigos**, após confirmação. Consulte [funcionamento, segurança e validação](docs/custom-categories.md).
 
+## Central de notificações — 10/10/2026
+
+Acesse **Ajustes → Notificações** ou o **sino no painel** para acompanhar teto mensal, orçamentos por categoria e contas próximas do vencimento ou atrasadas. A legenda **Como funcionam os alertas** explica que os avisos acompanham os dados e desaparecem quando deixam de se aplicar — por exemplo, após marcar uma conta como paga.
+
+Escolha os tipos de aviso, o percentual do teto e a antecedência das contas. As preferências ficam neste dispositivo, separadas por conta; os alertas usam os dados financeiros já sincronizados. Esta fase funciona dentro do app, sem notificações com ele fechado. Veja [regras, datas e limites](docs/notifications.md).
+
 ## O que já funciona
 
 - **Login com Google e Apple** — autenticação via Supabase OAuth, sem senha

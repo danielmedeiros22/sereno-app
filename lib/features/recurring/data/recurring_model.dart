@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'recurring_schedule.dart';
 
 enum RecurringFrequency { weekly, biweekly, monthly, yearly }
 
@@ -14,6 +15,7 @@ class RecurringModel {
   final int dueDay;
   final bool active;
   final DateTime createdAt;
+  final DateTime? firstDueDate;
 
   RecurringModel({
     String? id,
@@ -25,6 +27,7 @@ class RecurringModel {
     required this.dueDay,
     this.active = true,
     DateTime? createdAt,
+    this.firstDueDate,
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
 
@@ -38,6 +41,8 @@ class RecurringModel {
         'dueDay': dueDay,
         'active': active,
         'createdAt': createdAt.toIso8601String(),
+        if (firstDueDate != null)
+          'firstDueDate': firstDueDate!.toIso8601String(),
       };
 
   factory RecurringModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +59,9 @@ class RecurringModel {
       dueDay: json['dueDay'],
       active: json['active'] ?? true,
       createdAt: DateTime.parse(json['createdAt']),
+      firstDueDate: json['firstDueDate'] == null
+          ? null
+          : DateTime.parse(json['firstDueDate']),
     );
   }
 
@@ -68,6 +76,7 @@ class RecurringModel {
       dueDay: dueDay,
       active: active ?? this.active,
       createdAt: createdAt,
+      firstDueDate: firstDueDate,
     );
   }
 
@@ -85,22 +94,17 @@ class RecurringModel {
   }
 
   DateTime get nextDueDate {
-    final now = DateTime.now();
-    if (frequency == RecurringFrequency.monthly) {
-      final thisMonth = DateTime(now.year, now.month, dueDay.clamp(1, 28));
-      if (thisMonth.isAfter(now) || thisMonth.day == now.day) return thisMonth;
-      return DateTime(now.year, now.month + 1, dueDay.clamp(1, 28));
-    }
-    if (frequency == RecurringFrequency.yearly) {
-      final thisYear = DateTime(now.year, dueDay.clamp(1, 12), 1);
-      if (thisYear.isAfter(now)) return thisYear;
-      return DateTime(now.year + 1, dueDay.clamp(1, 12), 1);
-    }
-    return now;
+    final dates = relevantDueDates(this, DateTime.now(), 366);
+    return dates.isNotEmpty
+        ? dates.first
+        : firstDueDate ?? calendarDay(DateTime.now());
   }
 
+  bool get needsDueDate =>
+      firstDueDate == null && frequency != RecurringFrequency.monthly;
+
   int get daysUntilDue {
-    return nextDueDate.difference(DateTime.now()).inDays;
+    return calendarDifference(nextDueDate, DateTime.now());
   }
 
   RecurringStatus get status {

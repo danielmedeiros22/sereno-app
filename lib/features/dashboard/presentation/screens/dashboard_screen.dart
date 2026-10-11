@@ -23,6 +23,7 @@ import '../../../transactions/presentation/providers/category_provider.dart';
 import '../../../budget/presentation/providers/budget_provider.dart';
 import '../../../recurring/presentation/providers/recurring_provider.dart';
 import '../../../../core/services/financial_record_sync_provider.dart';
+import '../../../notifications/presentation/providers/notification_provider.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -56,6 +57,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       ref.read(categoryListProvider.notifier).synchronize();
       ref.read(budgetListProvider.notifier).synchronize();
       ref.read(recurringListProvider.notifier).synchronize();
+      ref.invalidate(notificationDateProvider);
     }
   }
 
@@ -64,6 +66,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
 
   Future<void> _refresh() async {
     if (_refreshing) return;
+    ref.invalidate(notificationDateProvider);
     setState(() => _refreshing = true);
     final owner = ref.read(transactionOwnerProvider);
     try {
@@ -128,6 +131,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         .watch(transactionListProvider)
         .whenData((_) => ref.watch(selectedMonthTransactionsProvider));
     final totals = ref.watch(monthTotalsProvider);
+    final alertCount = ref.watch(serenoAlertsProvider).valueOrNull?.length ?? 0;
     final limitState = ref.watch(monthlyLimitProvider);
     final limit = limitState.valueOrNull?.record.value ??
         MonthlyLimitService.defaultLimit;
@@ -148,6 +152,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
               floating: true,
               backgroundColor: theme.scaffoldBackgroundColor,
               actions: [
+                IconButton(
+                    tooltip: 'Notificações',
+                    onPressed: () => context.push('/notifications'),
+                    icon: Badge(
+                        isLabelVisible: alertCount > 0,
+                        label: Text('$alertCount'),
+                        child: const Icon(Icons.notifications_outlined))),
                 TextButton.icon(
                   onPressed: _refreshing ? null : _refresh,
                   icon: _refreshing

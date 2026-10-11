@@ -171,13 +171,15 @@ class RecurringListScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              isPaid
-                                  ? 'Paga este mês'
-                                  : isOverdue
-                                      ? 'Atrasada ${-daysLeft} dia${daysLeft == -1 ? "" : "s"}'
-                                      : daysLeft == 0
-                                          ? 'Vence hoje'
-                                          : 'Vence em $daysLeft dia${daysLeft == 1 ? "" : "s"}',
+                              item.needsDueDate
+                                  ? 'Defina o primeiro vencimento'
+                                  : isPaid
+                                      ? 'Paga este mês'
+                                      : isOverdue
+                                          ? 'Atrasada ${-daysLeft} dia${daysLeft == -1 ? "" : "s"}'
+                                          : daysLeft == 0
+                                              ? 'Vence hoje'
+                                              : 'Vence em $daysLeft dia${daysLeft == 1 ? "" : "s"}',
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: isPaid
                                     ? AppColors.income
@@ -193,6 +195,14 @@ class RecurringListScreen extends ConsumerWidget {
                         ),
                       ),
                       // Valor
+                      IconButton(
+                          tooltip: 'Editar conta recorrente',
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      RecurringFormScreen(rule: item)))),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
