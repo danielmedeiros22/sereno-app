@@ -11,7 +11,9 @@ Estado documentado em 09/10/2026. A correção está publicada em [Sereno](https
 
 R$ 1 e R$ 50 são aceitos. O mínimo anterior de R$ 100 foi removido tanto da validação Flutter quanto da restrição do banco. R$ 0,99, zero e valores negativos não são aceitos; o máximo permanece R$ 50.000.
 
-R$ 3.500 é apenas o padrão na ausência de um valor salvo e nunca é enviado automaticamente ao Supabase. O teto é uma configuração mensal recorrente da conta, sem histórico separado por mês.
+Sem valor salvo, o aplicativo inicia em R$ 0,00, indicando que o teto ainda não foi definido. Zero é somente o estado inicial: não é gravado nem enviado ao Supabase. A definição confirmada continua entre R$ 1 e R$ 50.000; tetos existentes, inclusive R$ 3.500, não são redefinidos. O teto é uma configuração mensal recorrente da conta, sem histórico separado por mês.
+
+Em Meus limites, a legenda discreta explica que o teto é o valor planejado de gastos mensais, usado no termômetro e nos alertas. O campo exibe duas casas decimais, usa fonte de leitura, fundo sem preenchimento e seleção suave, evitando a sobreposição visual do estilo de títulos com o realce de seleção. Selecionar texto continua disponível no computador e no celular.
 
 ## Persistência e sincronização
 

@@ -9,8 +9,9 @@ import 'package:sereno_app/features/dashboard/presentation/widgets/monthly_limit
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> open(
-      WidgetTester tester, Future<void> Function(double) save) async {
+  Future<void> open(WidgetTester tester, Future<void> Function(double) save,
+      {double initialLimit = 3500}) async {
+    if (initialLimit > 0) await MonthlyLimitService().save(initialLimit);
     await tester.pumpWidget(ProviderScope(
       overrides: [
         monthlyLimitOwnerProvider.overrideWithValue(null),
@@ -20,7 +21,7 @@ void main() {
           home: Scaffold(
               body: SingleChildScrollView(
         child: MonthlyLimitSheet(
-            currentLimit: 3500,
+            currentLimit: initialLimit,
             currentSpent: 100,
             owner: null,
             onChanged: save),
@@ -28,6 +29,34 @@ void main() {
     ));
     await tester.pump(const Duration(milliseconds: 100));
   }
+
+  testWidgets('zero inicial explica o teto e só salva após definir e confirmar',
+      (tester) async {
+    final saved = <double>[];
+    await open(tester, (value) async => saved.add(value), initialLimit: 0);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text,
+        '0,00');
+    expect(find.textContaining('O teto mensal é quanto'), findsOneWidget);
+    expect(find.text('Defina seu teto'), findsOneWidget);
+    expect(
+        find.text('Informe um valor entre R\$ 1 e R\$ 50.000.'), findsNothing);
+    expect(
+        tester
+            .widget<FilledButton>(
+                find.widgetWithText(FilledButton, 'Salvar alteração'))
+            .onPressed,
+        isNull);
+    await tester.enterText(find.byType(TextField), '50,00');
+    await tester.pump();
+    await tester.ensureVisible(find.text('Salvar alteração'));
+    await tester.tap(find.text('Salvar alteração'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(saved, isEmpty);
+    await tester.tap(find.text('Confirmar'));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(saved, [50]);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   testWidgets('digitar e cancelar não salvam; confirmar salva uma vez',
       (tester) async {

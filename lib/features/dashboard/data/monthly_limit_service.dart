@@ -26,7 +26,8 @@ class MonthlyLimitRecord {
 class MonthlyLimitService {
   MonthlyLimitService({this.userId, this.remote});
 
-  static const defaultLimit = 3500.0;
+  // Zero means no limit has been configured; it is never queued for upload.
+  static const defaultLimit = 0.0;
   final String? userId;
   final MonthlyLimitRemote? remote;
   Future<MonthlyLimitRecord>? _syncing;

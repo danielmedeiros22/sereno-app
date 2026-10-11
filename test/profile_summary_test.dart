@@ -115,6 +115,7 @@ void main() {
   testWidgets(
       'card and open limits sheet update together after spending and limit changes',
       (tester) async {
+    await MonthlyLimitService().save(3500);
     await TransactionSyncService().save(TransactionModel(
         type: 'expense',
         amount: 2240,

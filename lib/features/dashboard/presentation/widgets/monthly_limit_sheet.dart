@@ -46,13 +46,13 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
 
   double get _percent => _limit > 0 ? (widget.currentSpent / _limit) * 100 : 0;
 
-  String _formatInput(double value) => value
-      .toStringAsFixed(value == value.roundToDouble() ? 0 : 2)
-      .replaceAll('.', ',');
+  String _formatInput(double value) =>
+      value.toStringAsFixed(2).replaceAll('.', ',');
 
   double? get _draft {
     final value =
         double.tryParse(_textController.text.trim().replaceAll(',', '.'));
+    if (value == 0 && _savedLimit == 0) return 0;
     if (value == null || !value.isFinite || value < 1 || value > 50000) {
       return null;
     }
@@ -173,7 +173,10 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
             Center(child: TermometroOrb(percent: _percent, size: 140)),
             const SizedBox(height: 16),
             Center(
-                child: Text(AppColors.moodFor(_percent),
+                child: Text(
+                    _limit == 0
+                        ? 'Defina seu teto'
+                        : AppColors.moodFor(_percent),
                     style: theme.textTheme.headlineMedium
                         ?.copyWith(color: color))),
             const SizedBox(height: 20),
@@ -181,19 +184,36 @@ class MonthlyLimitSheetState extends ConsumerState<MonthlyLimitSheet> {
               Text('TETO MENSAL', style: theme.textTheme.labelSmall),
               SizedBox(
                   width: 160,
-                  child: TextField(
-                      controller: _textController,
-                      enabled: !_saving,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      textAlign: TextAlign.right,
-                      style: theme.textTheme.headlineMedium
-                          ?.copyWith(color: color),
-                      decoration: const InputDecoration(
-                          prefixText: 'R\$ ', border: InputBorder.none),
-                      onChanged: _applyLimit,
-                      onSubmitted: (_) => _confirmLimit())),
+                  child: TextSelectionTheme(
+                      data: TextSelectionThemeData(
+                        cursorColor: theme.colorScheme.primary,
+                        selectionColor:
+                            theme.colorScheme.primary.withValues(alpha: 0.18),
+                        selectionHandleColor: theme.colorScheme.primary,
+                      ),
+                      child: TextField(
+                          controller: _textController,
+                          enabled: !_saving,
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
+                          textAlign: TextAlign.right,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface),
+                          decoration: const InputDecoration(
+                              filled: false,
+                              hoverColor: Colors.transparent,
+                              focusColor: Colors.transparent,
+                              prefixText: 'R\$ ',
+                              border: InputBorder.none),
+                          onChanged: _applyLimit,
+                          onSubmitted: (_) => _confirmLimit()))),
             ]),
+            const SizedBox(height: 8),
+            Text(
+                'O teto mensal é quanto você planeja gastar por mês. Defina um valor para acompanhar seus gastos no termômetro e receber alertas.',
+                style: theme.textTheme.bodySmall),
             if (_draft == null)
               const Text('Informe um valor entre R\$ 1 e R\$ 50.000.'),
             const SizedBox(height: 12),

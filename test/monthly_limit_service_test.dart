@@ -10,7 +10,7 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   test('restaura o teto salvo em uma nova instância', () async {
-    expect(await MonthlyLimitService().load(), 3500);
+    expect(await MonthlyLimitService().load(), 0);
     await MonthlyLimitService().save(6200);
     expect(await MonthlyLimitService().load(), 6200);
   });
@@ -19,6 +19,7 @@ void main() {
     final service = MonthlyLimitService();
     await service.save(5000);
     await expectLater(service.save(double.nan), throwsArgumentError);
+    await expectLater(service.save(0), throwsArgumentError);
     await expectLater(service.save(0.99), throwsArgumentError);
     expect(await service.load(), 5000);
   });
@@ -45,13 +46,13 @@ void main() {
     await a.save(8000);
     expect(await guest.load(), 4200);
     expect(await a.load(), 8000);
-    expect(await b.load(), 3500);
+    expect(await b.load(), 0);
   });
 
   test('chave antiga só é restaurada para visitante', () async {
     SharedPreferences.setMockInitialValues({'monthly_spending_limit': 7100.0});
     expect(await MonthlyLimitService().load(), 7100);
-    expect(await MonthlyLimitService(userId: 'a').load(), 3500);
+    expect(await MonthlyLimitService(userId: 'a').load(), 0);
   });
 
   test('alteração offline sobrevive a reinício e sincroniza depois', () async {
@@ -78,10 +79,11 @@ void main() {
     expect(remote.writes, 1);
   });
 
-  test('conta sem teto remoto não grava automaticamente R\$ 3500', () async {
+  test('conta sem teto remoto inicia sem teto e não grava zero automaticamente',
+      () async {
     final remote = FakeRemote();
     final service = MonthlyLimitService(userId: 'a', remote: remote);
-    expect((await service.synchronize()).value, 3500);
+    expect((await service.synchronize()).value, 0);
     expect(remote.writes, 0);
   });
 
@@ -160,7 +162,7 @@ void main() {
     container.read(owner.notifier).state = 'b';
     await container.pump();
     await container.read(monthlyLimitProvider.notifier).ready;
-    expect(container.read(monthlyLimitProvider).value!.record.value, 3500);
+    expect(container.read(monthlyLimitProvider).value!.record.value, 0);
     container.read(owner.notifier).state = 'a';
     await container.pump();
     await container.read(monthlyLimitProvider.notifier).ready;

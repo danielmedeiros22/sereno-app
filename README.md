@@ -26,7 +26,7 @@ Sereno é um app de controle financeiro que organiza suas finanças em **Espaço
 - Aceita valores de **R$ 1 até R$ 50.000**, incluindo R$ 50 e centavos. O mínimo anterior de R$ 100 foi corrigido no aplicativo e no banco.
 - Para alterar: abra **Meus limites**, digite o valor, selecione **Salvar alteração** e confirme. A caixa mostra o teto atual e o novo; digitar ou cancelar não salva.
 - O valor confirmado permanece após fechar e reabrir o navegador. Visitantes salvam neste navegador; contas autenticadas sincronizam com o Supabase e mantêm alterações pendentes quando estão offline.
-- R$ 3.500 é apenas o padrão quando não existe teto salvo; não sobrescreve o valor escolhido nem é enviado automaticamente à nuvem.
+- Sem teto salvo, a tela inicia em **R$ 0,00** (teto ainda não definido). Esse estado não é enviado à nuvem. Tetos já salvos, inclusive R$ 3.500, são preservados; para definir um teto, informe de R$ 1 a R$ 50.000, salve e confirme. A legenda em Meus limites explica sua finalidade.
 
 A correção está publicada em [sereno-app-beta.vercel.app](https://sereno-app-beta.vercel.app/). Se a versão anterior continuar aparecendo, recarregue com **Ctrl + F5**.
 
