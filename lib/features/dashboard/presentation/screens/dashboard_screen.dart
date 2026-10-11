@@ -19,6 +19,7 @@ import '../../data/monthly_limit_service.dart';
 import '../providers/monthly_limit_provider.dart';
 import '../providers/avatar_provider.dart';
 import '../widgets/profile_summary_card.dart';
+import '../widgets/animated_add_transaction_button.dart';
 import '../../../transactions/presentation/providers/category_provider.dart';
 import '../../../budget/presentation/providers/budget_provider.dart';
 import '../../../recurring/presentation/providers/recurring_provider.dart';
@@ -118,7 +119,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     }
   }
 
-  void _openForm() async {
+  Future<void> _openForm() async {
     await Navigator.of(context).push<bool>(
       MaterialPageRoute(builder: (_) => const TransactionFormScreen()),
     );
@@ -332,11 +333,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: AnimatedAddTransactionButton(
         onPressed: _openForm,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
       ),
     );
   }

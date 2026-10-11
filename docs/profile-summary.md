@@ -1,5 +1,7 @@
 # Cartão Minhas finanças
 
+O botão **+** do painel responde ao clique com uma animação de 220 ms: encolhe levemente, retorna com um pequeno impulso e gira o ícone antes de abrir **Nova movimentação**. Cliques repetidos durante a abertura não duplicam o formulário. Quando a preferência de acessibilidade solicita animações reduzidas, o formulário abre diretamente.
+
 O cartão da tela inicial mostra a foto, o nome da conta, o período consultado, a quantidade de lançamentos e uma barra de dez segmentos com o percentual do teto utilizado. Escolha **Dia**, **Semana** ou **Mês** e toque na data para consultar outro período. O padrão é o mês atual; a semana vai de segunda a domingo, inclusive quando atravessa meses ou anos. O calendário usa português brasileiro. Saldo, entradas, saídas, lista, contagem e barras usam a mesma seleção e as datas locais do dispositivo.
 
 O teto é a configuração mensal atual da conta, não um histórico de tetos por mês. Nos filtros de dia e semana, a barra compara os gastos desse período com o **teto mensal**, como informa a legenda; não são criados tetos diários ou semanais. A seleção é apenas um filtro local de consulta, sem modificar os registros sincronizados.
