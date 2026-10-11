@@ -52,13 +52,15 @@ class _AnimatedAddTransactionButtonState
   @override
   Widget build(BuildContext context) => ScaleTransition(
         scale: _scale,
-        child: FloatingActionButton(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
-          tooltip: 'Nova movimentação',
-          onPressed: _opening ? null : _activate,
-          child:
-              RotationTransition(turns: _turns, child: const Icon(Icons.add)),
+        child: Semantics(
+          label: 'Nova movimentação',
+          child: FloatingActionButton(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            onPressed: _opening ? null : _activate,
+            child:
+                RotationTransition(turns: _turns, child: const Icon(Icons.add)),
+          ),
         ),
       );
 }
