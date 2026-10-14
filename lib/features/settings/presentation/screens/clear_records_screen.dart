@@ -167,6 +167,8 @@ class _ClearRecordsScreenState extends ConsumerState<ClearRecordsScreen> {
           const SizedBox(height: 12),
           const Text(
               'Escolha o que excluir. Tema, login, categorias, teto mensal e orçamentos por categoria serão mantidos.'),
+          const Text(
+              'A limpeza abrange todos os espaços da conta ou do modo visitante atual. O filtro de espaço do painel não limita a exclusão. Os espaços serão mantidos.'),
           CheckboxListTile(
             title: const Text('Selecionar tudo'),
             value: _selected.length == _labels.length,

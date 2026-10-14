@@ -9,6 +9,8 @@ import '../../data/default_categories.dart';
 import '../../data/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import '../widgets/category_picker.dart';
+import '../../../spaces/space_selector.dart';
+import '../../../spaces/spaces_provider.dart';
 import '../../../../core/services/map_picker_screen.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
@@ -25,6 +27,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   final _descriptionController = TextEditingController();
   DateTime _date = DateTime.now();
   CategoryItem? _selectedCategory;
+  late String _spaceId;
+  late final String? _owner;
+  bool _saving = false;
 
   final _locationService = LocationService();
   LocationResult? _location;
@@ -38,6 +43,8 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   void initState() {
     super.initState();
     _selectedCategory = _filteredCategories.first;
+    _owner = ref.read(transactionOwnerProvider);
+    _spaceId = ref.read(selectedSpaceProvider) ?? 'personal';
     _fetchLocation();
   }
 
@@ -93,6 +100,12 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
+    if (_owner != ref.read(transactionOwnerProvider)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('A conta mudou. Reabra o formulário.')));
+      return;
+    }
     final amountText = _amountController.text
         .replaceAll(' ', '')
         .replaceAll('.', '')
@@ -114,6 +127,11 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     }
 
     final tx = TransactionModel(
+      spaceId: _spaceId,
+      spaceName: ref
+          .read(availableSpacesProvider)
+          .firstWhere((s) => s.id == _spaceId)
+          .name,
       type: _type,
       amount: amount,
       category: _selectedCategory!.name,
@@ -127,8 +145,18 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       longitude: _locationEnabled ? _location?.longitude : null,
     );
 
-    await ref.read(transactionListProvider.notifier).add(tx);
-    if (mounted) Navigator.of(context).pop(true);
+    setState(() => _saving = true);
+    try {
+      await ref.read(transactionListProvider.notifier).add(tx);
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Não foi possível salvar. Tente novamente.')));
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
   }
 
   @override
@@ -144,7 +172,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         title: const Text('Nova movimentação'),
         actions: [
           TextButton(
-            onPressed: _save,
+            onPressed: _saving ? null : _save,
             child: Text('Salvar',
                 style: TextStyle(
                     color: _activeColor, fontWeight: FontWeight.w600)),
@@ -156,6 +184,13 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            SpaceSelector(
+                value: _spaceId,
+                allowAll: false,
+                onChanged: _saving
+                    ? (_) {}
+                    : (id) => setState(() => _spaceId = id ?? 'personal')),
+            const SizedBox(height: 20),
             _buildTypeToggle(theme),
             const SizedBox(height: 32),
             _buildAmountField(theme),

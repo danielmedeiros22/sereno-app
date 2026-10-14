@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../data/transaction_model.dart';
@@ -8,20 +7,20 @@ class TransactionTile extends StatelessWidget {
   final TransactionModel transaction;
   final VoidCallback? onTap;
   final VoidCallback? onDismissed;
+  final String? spaceLabel;
 
   const TransactionTile({
     super.key,
     required this.transaction,
     this.onTap,
     this.onDismissed,
+    this.spaceLabel,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
     final color = transaction.isIncome ? AppColors.income : AppColors.expense;
-    final sign = transaction.isIncome ? '+' : '-';
 
     final tile = InkWell(
       onTap: onTap,
@@ -56,15 +55,21 @@ class TransactionTile extends StatelessWidget {
                     Text(
                       transaction.description!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                        color:
+                            theme.colorScheme.onSurface.withValues(alpha: 0.5),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  if (spaceLabel != null)
+                    Text(spaceLabel!,
+                        style: theme.textTheme.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
-Text(
+            Text(
               '${transaction.isIncome ? "+" : "-"} R\$ ${transaction.amount.toStringAsFixed(2)}',
               style: theme.textTheme.titleSmall?.copyWith(
                 color: color,

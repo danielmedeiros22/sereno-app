@@ -6,9 +6,11 @@ import '../transactions/presentation/providers/transaction_provider.dart';
 
 final reportProvider = Provider<AsyncValue<ReportData>>((ref) {
   final period = ref.watch(summaryPeriodProvider);
-  return ref
-      .watch(transactionListProvider)
-      .whenData((records) => ReportData.fromRecords(records, period));
+  final space = ref.watch(selectedSpaceProvider);
+  return ref.watch(transactionListProvider).whenData((records) =>
+      ReportData.fromRecords(
+          records.where((tx) => space == null || tx.spaceId == space).toList(),
+          period));
 });
 
 class CategoryTotal {

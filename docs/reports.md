@@ -2,7 +2,7 @@
 
 Em **Ajustes → Relatórios**, consulte entradas, saídas, saldo do período, distribuição das saídas por categoria e evolução dos gastos. As barras por categoria mostram valores em reais e percentuais das saídas. A evolução mostra cada dia da semana/mês ou cada hora do dia; toque nas barras para consultar o valor e deslize horizontalmente para ver o período completo.
 
-Os filtros **Dia, Semana e Mês** e a data de referência são compartilhados com o painel. No filtro mensal, escolha qualquer dia do mês desejado; a semana começa na segunda-feira. Alterar o período é apenas uma consulta local. Não há agrupamento por espaço: os espaços ainda não estão implementados nem vinculados aos lançamentos.
+Os filtros **Dia, Semana e Mês**, a data de referência e o seletor **Espaço** são compartilhados com o painel. No filtro mensal, escolha qualquer dia do mês desejado; a semana começa na segunda-feira. Escolha um espaço individual para consultar seus gastos, ou **Todos os espaços** para consolidar a conta. Os filtros são apenas consultas locais. Consulte [espaços individuais](spaces.md) para criação, sincronização e alcance do teto global.
 
 Os cálculos usam `transactionListProvider`, o mesmo fluxo de lançamentos da conta/visitante, sem gravar uma cópia dos resultados. Inclusões, edições, exclusões e dados recebidos pela sincronização recalculam os relatórios. Categorias personalizadas preservam seu nome/emoji; nomes equivalentes usam a normalização já aplicada aos orçamentos. Os totais são agregados em centavos. Contas futuras, recorrências não lançadas e diário não entram nos valores. Não há exportação nesta primeira versão.
 

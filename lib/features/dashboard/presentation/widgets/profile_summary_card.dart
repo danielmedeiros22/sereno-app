@@ -8,6 +8,8 @@ import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/presentation/providers/summary_period.dart';
 import '../providers/avatar_provider.dart';
 import 'segmented_limit_progress.dart';
+import '../../../spaces/space_selector.dart';
+import '../../../spaces/spaces_provider.dart';
 
 class ProfileSummaryCard extends ConsumerStatefulWidget {
   const ProfileSummaryCard(
@@ -142,13 +144,15 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                 Text('Minhas finanças', style: theme.textTheme.titleMedium),
-                Text('$name · Espaço pessoal',
+                Text('$name · ${ref.watch(selectedSpaceLabelProvider)}',
                     style: theme.textTheme.bodySmall,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis),
               ])),
           if (owner != null) const EditProfileNameButton(),
         ]),
+        const SizedBox(height: 12),
+        const SpaceSelector(),
         const SizedBox(height: 12),
         Wrap(spacing: 8, children: [
           for (final type in SummaryPeriodType.values)
@@ -176,6 +180,8 @@ class _ProfileSummaryCardState extends ConsumerState<ProfileSummaryCard> {
         if (period.type != SummaryPeriodType.month)
           Text('Gastos do período em relação ao teto mensal',
               style: theme.textTheme.bodySmall),
+        Text('Teto da conta: gastos de todos os espaços',
+            style: theme.textTheme.bodySmall),
         InkWell(
             onTap: widget.onLimitsTap,
             borderRadius: BorderRadius.circular(6),

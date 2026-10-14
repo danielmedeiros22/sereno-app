@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import '../../../spaces/space_selector.dart';
+import '../../../spaces/spaces_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -59,7 +62,73 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
       ref.read(categoryListProvider.notifier).synchronize();
       ref.read(budgetListProvider.notifier).synchronize();
       ref.read(recurringListProvider.notifier).synchronize();
+      ref.read(spaceListProvider.notifier).synchronize();
       ref.invalidate(notificationDateProvider);
+    }
+  }
+
+  Future<void> _moveSpace(TransactionModel tx) async {
+    final owner = ref.read(transactionOwnerProvider);
+    var selected = tx.spaceId;
+    final choice = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+            builder: (dialogContext, setDialogState) => AlertDialog(
+                  title: const Text('Alterar espaço do lançamento'),
+                  content: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(
+                        '${tx.category} · ${NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(tx.amount)}'),
+                    const SizedBox(height: 16),
+                    SpaceSelector(
+                        value: selected,
+                        allowAll: false,
+                        onChanged: (id) =>
+                            setDialogState(() => selected = id ?? 'personal')),
+                    const SizedBox(height: 12),
+                    const Text(
+                        'Somente a organização por espaço será alterada. Valor, categoria e data serão preservados.'),
+                  ]),
+                  actions: [
+                    TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: const Text('Cancelar')),
+                    FilledButton(
+                        onPressed: () => Navigator.pop(dialogContext, selected),
+                        child: const Text('Confirmar'))
+                  ],
+                )));
+    if (!mounted ||
+        choice == null ||
+        choice == tx.spaceId ||
+        owner != ref.read(transactionOwnerProvider)) {
+      return;
+    }
+    final current = ref
+        .read(transactionListProvider)
+        .valueOrNull
+        ?.where((item) => item.id == tx.id)
+        .firstOrNull;
+    if (current == null ||
+        jsonEncode(current.toJson()) != jsonEncode(tx.toJson())) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('O lançamento mudou. Abra novamente para revisar.')));
+      return;
+    }
+    final space =
+        ref.read(availableSpacesProvider).firstWhere((s) => s.id == choice);
+    try {
+      await ref
+          .read(transactionListProvider.notifier)
+          .update(tx.inSpace(space.id, space.name));
+      if (mounted && owner == ref.read(transactionOwnerProvider)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Lançamento movido para ${space.name}.')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Não foi possível alterar o espaço.')));
+      }
     }
   }
 
@@ -83,6 +152,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
         ref.read(categoryListProvider.notifier).synchronize(),
         ref.read(budgetListProvider.notifier).synchronize(),
         ref.read(recurringListProvider.notifier).synchronize(),
+        ref.read(spaceListProvider.notifier).synchronize(),
       ]);
       if (!mounted || owner != ref.read(transactionOwnerProvider)) return;
       final transactionStatus = ref.read(transactionSyncStatusProvider);
@@ -96,7 +166,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
           ref.read(budgetListProvider).hasError ||
           ref.read(recurringListProvider).hasError ||
           ref.read(financialSyncFailedProvider('budget')) ||
-          ref.read(financialSyncFailedProvider('recurring'));
+          ref.read(financialSyncFailedProvider('recurring')) ||
+          ref.read(spaceListProvider).hasError ||
+          ref.read(financialSyncFailedProvider('space'));
       final syncing = transactionStatus == TransactionSyncStatus.syncing ||
           limitState.valueOrNull?.syncing == true;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -143,7 +215,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
     final income = totals.value?['income'] ?? 0;
     final expense = totals.value?['expense'] ?? 0;
     final balance = income - expense;
-    final percent = limit > 0 ? (expense / limit) * 100 : 0.0;
+    final accountExpense =
+        ref.watch(accountPeriodTotalsProvider).valueOrNull?['expense'] ?? 0;
+    final percent = limit > 0 ? (accountExpense / limit) * 100 : 0.0;
 
     return Scaffold(
       body: SafeArea(
@@ -195,7 +269,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                   ],
                   ProfileSummaryCard(
                       percent: percent,
-                      onLimitsTap: () => _openLimitsSheet(expense)),
+                      onLimitsTap: () => _openLimitsSheet(accountExpense)),
                   const SizedBox(height: 24),
                   Text('Olá, $displayName 👋',
                       style: theme.textTheme.bodyMedium?.copyWith(
@@ -224,7 +298,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => _openLimitsSheet(expense),
+                        onTap: () => _openLimitsSheet(accountExpense),
                         child: Column(
                           children: [
                             TermometroOrb(
@@ -311,6 +385,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
                                             .withValues(alpha: 0.4)))),
                             ...entry.value.map((tx) => TransactionTile(
                                 transaction: tx,
+                                spaceLabel: ref
+                                        .watch(availableSpacesProvider)
+                                        .where((s) => s.id == tx.spaceId)
+                                        .map((s) => '${s.icon} ${s.name}')
+                                        .firstOrNull ??
+                                    tx.spaceName,
+                                onTap: () => _moveSpace(tx),
                                 onDismissed: () {
                                   ref
                                       .read(transactionListProvider.notifier)
@@ -394,10 +475,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen>
             builder: (_, sheetRef, __) => MonthlyLimitSheet(
                 currentLimit: record.value,
                 currentSpent: sheetRef
-                        .watch(monthTotalsProvider)
+                        .watch(accountPeriodTotalsProvider)
                         .valueOrNull?['expense'] ??
                     spent,
-                periodLabel: sheetRef.watch(summaryPeriodProvider).label,
+                periodLabel:
+                    '${sheetRef.watch(summaryPeriodProvider).label} · todos os espaços',
                 owner: owner,
                 onChanged: _saveLimit)));
   }

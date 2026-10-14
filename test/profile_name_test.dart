@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sereno_app/core/services/financial_record_sync_provider.dart';
+import 'package:sereno_app/features/transactions/data/transaction_sync_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sereno_app/core/services/guest_service.dart';
 import 'package:sereno_app/features/auth/presentation/providers/auth_provider.dart';
@@ -109,6 +111,9 @@ void main() {
         currentUserProvider.overrideWithValue(auth.user),
         authControllerProvider.overrideWithValue(auth),
         transactionOwnerProvider.overrideWithValue('account'),
+        financialRecordRemoteProvider.overrideWithValue(null),
+        localTransactionServiceProvider
+            .overrideWithValue(TransactionSyncService(userId: 'account')),
         selectedMonthTransactionsProvider.overrideWithValue([]),
         avatarServiceProvider.overrideWithValue(AvatarService(owner: null)),
         isGuestProvider.overrideWith((ref) => false),
@@ -120,7 +125,9 @@ void main() {
             const Expanded(child: SettingsScreen()),
             Expanded(
                 child: Scaffold(
-                    body: ProfileSummaryCard(percent: 0, onLimitsTap: () {}))),
+                    body: SingleChildScrollView(
+                        child: ProfileSummaryCard(
+                            percent: 0, onLimitsTap: () {})))),
           ]))));
       await tester.pumpAndSettle();
       expect(find.byTooltip('Editar nome'), findsNWidgets(2));
@@ -147,7 +154,7 @@ void main() {
         await tester.pumpAndSettle();
       } else {
         expect(find.text('Meu nome'), findsOneWidget);
-        expect(find.text('Meu nome · Espaço pessoal'), findsOneWidget);
+        expect(find.text('Meu nome · Todos os espaços'), findsOneWidget);
       }
       expect(find.text('person@example.com'), findsOneWidget);
       expect(tester.takeException(), isNull);

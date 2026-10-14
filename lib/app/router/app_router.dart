@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/reports/reports_screen.dart';
+import '../../features/spaces/spaces_screen.dart';
 import '../../features/budget/presentation/screens/budget_list_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 
@@ -40,6 +41,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       );
     },
     routes: [
+      GoRoute(path: '/spaces', builder: (_, __) => const SpacesScreen()),
       GoRoute(path: '/reports', builder: (_, __) => const ReportsScreen()),
       GoRoute(
           path: '/notifications',

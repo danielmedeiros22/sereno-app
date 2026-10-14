@@ -12,6 +12,8 @@ class TransactionModel {
   final double? latitude;
   final double? longitude;
   final DateTime createdAt;
+  final String spaceId;
+  final String spaceName;
 
   TransactionModel({
     String? id,
@@ -25,6 +27,8 @@ class TransactionModel {
     this.latitude,
     this.longitude,
     DateTime? createdAt,
+    this.spaceId = 'personal',
+    this.spaceName = 'Pessoal',
   })  : id = id ?? const Uuid().v4(),
         createdAt = createdAt ?? DateTime.now();
 
@@ -40,6 +44,8 @@ class TransactionModel {
         'latitude': latitude,
         'longitude': longitude,
         'createdAt': createdAt.toIso8601String(),
+        'spaceId': spaceId,
+        'spaceName': spaceName,
       };
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -52,13 +58,33 @@ class TransactionModel {
       description: json['description'],
       date: DateTime.parse(json['date']),
       location: json['location'],
-      latitude: json['latitude'] != null ? (json['latitude'] as num).toDouble() : null,
-      longitude: json['longitude'] != null ? (json['longitude'] as num).toDouble() : null,
+      latitude: json['latitude'] != null
+          ? (json['latitude'] as num).toDouble()
+          : null,
+      longitude: json['longitude'] != null
+          ? (json['longitude'] as num).toDouble()
+          : null,
       createdAt: DateTime.parse(json['createdAt']),
+      spaceId: json['spaceId'] as String? ?? 'personal',
+      spaceName: json['spaceName'] as String? ?? 'Pessoal',
     );
   }
 
   bool get isIncome => type == 'income';
+  TransactionModel inSpace(String id, String name) => TransactionModel(
+      id: this.id,
+      type: type,
+      amount: amount,
+      category: category,
+      categoryIcon: categoryIcon,
+      description: description,
+      date: date,
+      location: location,
+      latitude: latitude,
+      longitude: longitude,
+      createdAt: createdAt,
+      spaceId: id,
+      spaceName: name);
   bool get isExpense => type == 'expense';
   bool get hasLocation => latitude != null && longitude != null;
 }

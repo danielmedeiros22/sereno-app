@@ -120,7 +120,10 @@ void main() {
     await tester.pumpWidget(UncontrolledProviderScope(
         container: container, child: const MaterialApp(home: ReportsScreen())));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('2 lançamentos no período'), 150);
     expect(find.text('2 lançamentos no período'), findsOneWidget);
+    await tester.drag(find.byType(ListView), const Offset(0, 1000));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Dia'));
     await tester.pumpAndSettle();
     expect(container.read(summaryPeriodProvider).type, SummaryPeriodType.day);

@@ -172,12 +172,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: const Text('Gastos por período e categoria'),
             onTap: () => context.push('/reports'),
           ),
-          if (!isGuest)
-            ListTile(
-              leading: const Icon(Icons.people_outline),
-              title: const Text('Espaços compartilhados'),
-              onTap: () {},
-            ),
+          ListTile(
+            leading: const Icon(Icons.people_outline),
+            title: const Text('Meus espaços'),
+            subtitle: const Text('Organizar lançamentos por espaço individual'),
+            onTap: () => context.push('/spaces'),
+          ),
           const Divider(height: 40),
           ListTile(
             leading: const Icon(Icons.delete_sweep_outlined, color: Colors.red),

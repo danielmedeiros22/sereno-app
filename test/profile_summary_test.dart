@@ -154,7 +154,8 @@ void main() {
     }
     expect(find.text('64% do teto utilizado', skipOffstage: false),
         findsNWidgets(2));
-    expect(find.text('Referência: 05/10/2026 – 11/10/2026'), findsOneWidget);
+    expect(find.text('Referência: 05/10/2026 – 11/10/2026 · todos os espaços'),
+        findsOneWidget);
     await container.read(monthlyLimitProvider.notifier).save(70000);
     await tester.pump(const Duration(milliseconds: 100));
     expect(find.text('3% do teto utilizado', skipOffstage: false),

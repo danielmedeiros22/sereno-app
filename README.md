@@ -49,7 +49,9 @@ Escolha os tipos de aviso, o percentual do teto e a antecedência das contas. As
 
 ## O que já funciona
 
-- **Relatórios** — em Ajustes, comparação de entradas/saídas, gastos por categoria e evolução por dia/hora, com filtros Dia/Semana/Mês compartilhados com o painel e dados do mesmo fluxo sincronizado. Veja [funcionamento e limites](docs/reports.md). A análise por espaço depende da implementação dos espaços.
+- **Espaços individuais** — Pessoal, Casa, Empresa e Viagem; criação/edição com emoji em Ajustes → Meus espaços, vínculo nos lançamentos e filtros compartilhados no painel/relatórios. Conta sincroniza; visitante mantém local. Teto/termômetro e alertas continuam globais. Veja [funcionamento e alcance](docs/spaces.md). Compartilhamento entre pessoas ainda não está implementado.
+
+- **Relatórios** — em Ajustes, comparação de entradas/saídas, gastos por categoria e evolução por dia/hora, com filtros Dia/Semana/Mês e espaço compartilhados com o painel e dados do mesmo fluxo sincronizado. Veja [funcionamento e limites](docs/reports.md).
 
 - **Login com Google e Apple** — autenticação via Supabase OAuth, sem senha
 - **Modo visitante** — use sem criar conta, dados ficam salvos no dispositivo

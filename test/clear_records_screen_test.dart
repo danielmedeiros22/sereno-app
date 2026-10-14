@@ -20,6 +20,8 @@ void main() {
     await tester.tap(find.text('Entradas'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Revisar exclusão'), 200);
+    await tester.ensureVisible(find.text('Revisar exclusão'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Revisar exclusão'));
     await tester.pumpAndSettle();
   }

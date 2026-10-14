@@ -8,6 +8,8 @@ import '../transactions/presentation/providers/summary_period.dart';
 import '../transactions/presentation/providers/transaction_provider.dart';
 import '../transactions/presentation/widgets/transaction_sync_banner.dart';
 import 'report_data.dart';
+import '../spaces/space_selector.dart';
+import '../spaces/spaces_provider.dart';
 
 String _money(int cents) =>
     NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(cents / 100);
@@ -28,6 +30,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       final notifier = ref.read(transactionListProvider.notifier);
       await notifier.load();
       await notifier.synchronize();
+      await ref.read(spaceListProvider.notifier).synchronize();
     } finally {
       if (mounted) setState(() => _refreshing = false);
     }
@@ -89,6 +92,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               padding: const EdgeInsets.all(20),
               children: [
                 const TransactionSyncBanner(),
+                const SizedBox(height: 16),
+                const SpaceSelector(),
                 const SizedBox(height: 16),
                 Wrap(
                     spacing: 8,

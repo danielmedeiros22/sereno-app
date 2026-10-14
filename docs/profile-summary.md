@@ -1,5 +1,7 @@
 # Cartão Minhas finanças
 
+O seletor **Espaço** filtra contagem, saldo, entradas/saídas e lista, com a mesma seleção usada em Relatórios. A barra e o termômetro conservam o alcance global do teto: gastos do período em **todos os espaços**, como informa a legenda. Consulte [espaços individuais](spaces.md) para criar, editar e reorganizar lançamentos.
+
 ## Aparência do aplicativo instalado
 
 Na Web para iPhone/iPad, as páginas Material (rotas do GoRouter e formulários abertos com Navigator) não recebem uma segunda animação lateral do Flutter. O iOS já pode animar seu gesto de histórico; a combinação provocava páginas aparentemente repetidas durante a troca de tela, conforme o problema Flutter #114324. Os botões de abrir/voltar e a pilha de navegação permanecem. A alteração não bloqueia eventos de toque do navegador nem muda animações de modais ou do botão +. Android, Web de computador e aplicativos nativos conservam as transições anteriores. A verificação do gesto real requer um aparelho iOS.

@@ -167,6 +167,21 @@ final summaryPeriodProvider = Provider<SummaryPeriod>((ref) => SummaryPeriod(
 
 final selectedMonthTransactionsProvider =
     Provider<List<TransactionModel>>((ref) {
+  final space = ref.watch(selectedSpaceProvider);
+  return ref
+      .watch(accountPeriodTransactionsProvider)
+      .where((tx) => space == null || tx.spaceId == space)
+      .toList();
+});
+
+// Query preference only: reset whenever the owner changes, never move records.
+final selectedSpaceProvider = StateProvider<String?>((ref) {
+  ref.watch(transactionOwnerProvider);
+  return null;
+});
+
+final accountPeriodTransactionsProvider =
+    Provider<List<TransactionModel>>((ref) {
   final period = ref.watch(summaryPeriodProvider);
   return (ref.watch(transactionListProvider).valueOrNull ??
           <TransactionModel>[])
@@ -174,8 +189,7 @@ final selectedMonthTransactionsProvider =
       .toList();
 });
 
-final monthTotalsProvider = Provider<AsyncValue<Map<String, double>>>((ref) {
-  final transactions = ref.watch(selectedMonthTransactionsProvider);
+AsyncValue<Map<String, double>> _totals(List<TransactionModel> transactions) {
   double income = 0, expense = 0;
   for (final tx in transactions) {
     if (tx.isIncome) {
@@ -186,4 +200,9 @@ final monthTotalsProvider = Provider<AsyncValue<Map<String, double>>>((ref) {
   }
   return AsyncValue.data(
       {'income': income, 'expense': expense, 'balance': income - expense});
-});
+}
+
+final monthTotalsProvider = Provider<AsyncValue<Map<String, double>>>(
+    (ref) => _totals(ref.watch(selectedMonthTransactionsProvider)));
+final accountPeriodTotalsProvider = Provider<AsyncValue<Map<String, double>>>(
+    (ref) => _totals(ref.watch(accountPeriodTransactionsProvider)));
