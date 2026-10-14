@@ -166,6 +166,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             subtitle: const Text('Tetos mensais por tipo de gasto'),
             onTap: () => context.push('/budget'),
           ),
+          ListTile(
+            leading: const Icon(Icons.bar_chart),
+            title: const Text('Relatórios'),
+            subtitle: const Text('Gastos por período e categoria'),
+            onTap: () => context.push('/reports'),
+          ),
           if (!isGuest)
             ListTile(
               leading: const Icon(Icons.people_outline),

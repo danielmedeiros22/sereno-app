@@ -49,6 +49,8 @@ Escolha os tipos de aviso, o percentual do teto e a antecedência das contas. As
 
 ## O que já funciona
 
+- **Relatórios** — em Ajustes, comparação de entradas/saídas, gastos por categoria e evolução por dia/hora, com filtros Dia/Semana/Mês compartilhados com o painel e dados do mesmo fluxo sincronizado. Veja [funcionamento e limites](docs/reports.md). A análise por espaço depende da implementação dos espaços.
+
 - **Login com Google e Apple** — autenticação via Supabase OAuth, sem senha
 - **Modo visitante** — use sem criar conta, dados ficam salvos no dispositivo
 - **Dashboard** — saldo atual, entradas/saídas do mês, orbe do Termômetro
