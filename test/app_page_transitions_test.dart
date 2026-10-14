@@ -28,18 +28,21 @@ void main() {
           pageTransitionsTheme: appPageTransitions(isWeb: true)),
       home: const Scaffold(body: Text('Ajustes')),
     ));
-    navigator.currentState!.push(MaterialPageRoute<void>(
-        builder: (_) => const Scaffold(body: Text('Notificações'))));
+    final route = MaterialPageRoute<void>(
+        builder: (_) => const Scaffold(body: Text('Notificações')));
+    navigator.currentState!.push(route);
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    expect(route.transitionDuration, Duration.zero);
+    expect(route.reverseTransitionDuration, Duration.zero);
+    expect(route.animation!.status, AnimationStatus.completed);
     expect(find.byType(SlideTransition), findsNothing);
     expect(tester.getTopLeft(find.text('Notificações')).dx, 0);
     await tester.pumpAndSettle();
     navigator.currentState!.pop();
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    expect(route.animation!.status, AnimationStatus.dismissed);
     expect(find.byType(SlideTransition), findsNothing);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(find.text('Ajustes'), findsOneWidget);
     expect(find.text('Notificações'), findsNothing);
     expect(navigator.currentState!.canPop(), isFalse);

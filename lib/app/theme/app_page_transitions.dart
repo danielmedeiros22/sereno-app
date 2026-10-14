@@ -15,6 +15,14 @@ PageTransitionsTheme appPageTransitions({bool isWeb = kIsWeb}) {
 class _InstantWebPageTransitionsBuilder extends PageTransitionsBuilder {
   const _InstantWebPageTransitionsBuilder();
 
+  // Returning child alone hides the slide but still keeps the outgoing route
+  // alive for the default animation duration, overlapping iOS history snapshots.
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => Duration.zero;
+
   @override
   Widget buildTransitions<T>(
     PageRoute<T> route,
