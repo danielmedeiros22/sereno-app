@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 import 'app_typography.dart';
+import 'app_page_transitions.dart';
 
 /// Tema Material 3 do Sereno, em variantes claro e escuro.
 class AppTheme {
@@ -22,6 +23,7 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      pageTransitionsTheme: appPageTransitions(),
       brightness: s.brightness,
       scaffoldBackgroundColor: s.bg,
       canvasColor: s.bg,
