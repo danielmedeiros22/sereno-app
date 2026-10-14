@@ -212,6 +212,8 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         LinearProgressIndicator(
             value: maximum == 0 ? 0 : (cents / maximum).clamp(0, 1),
             color: color,
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
             minHeight: 8,
             borderRadius: BorderRadius.circular(4)),
       ]));
