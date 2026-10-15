@@ -6,8 +6,8 @@
 
 Controle financeiro pessoal e compartilhado — Web, Android e iOS em uma base Flutter.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.24+-02569B?logo=flutter&logoColor=white)
-![Dart](https://img.shields.io/badge/Dart-3.4+-0175C2?logo=dart&logoColor=white)
+![Flutter](https://img.shields.io/badge/Flutter-3.44.9+-02569B?logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-3.12+-0175C2?logo=dart&logoColor=white)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3FCF8E?logo=supabase&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -48,6 +48,8 @@ Acesse **Ajustes → Notificações** ou o **sino no painel** para acompanhar te
 Escolha os tipos de aviso, o percentual do teto e a antecedência das contas. As preferências ficam neste dispositivo, separadas por conta; os alertas usam os dados financeiros já sincronizados. Esta fase funciona dentro do app, sem notificações com ele fechado. Veja [regras, datas e limites](docs/notifications.md).
 
 ## O que já funciona
+
+- **Exportação PDF e CSV** — no menu Exportar relatório, com período e espaço selecionados, totais e lançamentos. Geração local e ação explícita para salvar/compartilhar. Veja [formatos, campos e sincronização](docs/reports.md#exportação-em-pdf-e-csv).
 
 - **Espaços individuais** — Pessoal, Casa, Empresa e Viagem; criação/edição com emoji em Ajustes → Meus espaços, vínculo nos lançamentos e filtros compartilhados no painel/relatórios. Conta sincroniza; visitante mantém local. Teto/termômetro e alertas continuam globais. Veja [funcionamento e alcance](docs/spaces.md). Compartilhamento entre pessoas ainda não está implementado.
 

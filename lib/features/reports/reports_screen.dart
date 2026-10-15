@@ -10,6 +10,8 @@ import '../transactions/presentation/widgets/transaction_sync_banner.dart';
 import 'report_data.dart';
 import '../spaces/space_selector.dart';
 import '../spaces/spaces_provider.dart';
+import 'report_export.dart';
+import 'report_export_dialog.dart';
 
 String _money(int cents) =>
     NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$').format(cents / 100);
@@ -22,6 +24,33 @@ class ReportsScreen extends ConsumerStatefulWidget {
 
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   bool _refreshing = false;
+
+  Future<void> _export(ReportExportFormat format) async {
+    final source = ref.read(transactionListProvider).asData?.value;
+    if (source == null || ref.read(reportProvider).asData == null) return;
+    final owner = ref.read(transactionOwnerProvider);
+    final status = ref.read(transactionSyncStatusProvider);
+    final note = switch (status) {
+      TransactionSyncStatus.synced => 'Lançamentos sincronizados na geração.',
+      TransactionSyncStatus.local => 'Registros locais do modo visitante.',
+      _ =>
+        'Dados disponíveis neste dispositivo; pode haver sincronização pendente.',
+    };
+    final snapshot = ReportExportSnapshot.capture(
+        records: source,
+        period: ref.read(summaryPeriodProvider),
+        spaceId: ref.read(selectedSpaceProvider),
+        spaceNames: {
+          for (final space in ref.read(availableSpacesProvider))
+            space.id: space.name
+        },
+        generatedAt: DateTime.now(),
+        syncNote: note);
+    await showDialog<void>(
+        context: context,
+        builder: (_) => ReportExportDialog(
+            snapshot: snapshot, format: format, owner: owner));
+  }
 
   Future<void> _refresh() async {
     if (_refreshing) return;
@@ -74,6 +103,21 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => context.pop()),
           actions: [
+            PopupMenuButton<ReportExportFormat>(
+                tooltip: 'Exportar relatório',
+                icon: const Icon(Icons.file_download_outlined),
+                enabled: !_refreshing &&
+                    report.asData != null &&
+                    ref.watch(transactionListProvider).asData != null,
+                onSelected: _export,
+                itemBuilder: (_) => const [
+                      PopupMenuItem(
+                          value: ReportExportFormat.pdf,
+                          child: Text('Exportar PDF')),
+                      PopupMenuItem(
+                          value: ReportExportFormat.csv,
+                          child: Text('Exportar CSV')),
+                    ]),
             IconButton(
                 tooltip: 'Atualizar relatórios',
                 onPressed: _refreshing ? null : _refresh,
